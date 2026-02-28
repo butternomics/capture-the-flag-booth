@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CTF ATL — Admin Dashboard</title>
+  <style>
+    :root {
+      --green: #1B3A2D;
+      --green-dark: #152E23;
+      --gold: #C9A94E;
+      --gold-dim: #A68B3C;
+      --bg: #1A1710;
+      --card: #2C2418;
+      --text: #F5F0E8;
+      --dim: #A89E8C;
+      --red: #C94E4E;
+      --green-ok: #4EC97A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: var(--gold);
+      letter-spacing: 2px;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--dim);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: var(--gold);
+      color: var(--bg);
+      border-color: var(--gold);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--gold);
+    }
+
+    .submissions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .submission-card {
+      background: var(--card);
+      border: 1px solid var(--green);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .submission-card.status-pending {
+      border-left: 4px solid var(--gold);
+    }
+
+    .submission-card.status-approved {
+      border-left: 4px solid var(--green-ok);
+    }
+
+    .submission-card.status-rejected {
+      border-left: 4px solid var(--red);
+    }
+
+    .sub-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sub-info h3 {
+      font-size: 18px;
+      margin-bottom: 2px;
+    }
+
+    .sub-info p {
+      font-size: 13px;
+      color: var(--dim);
+    }
+
+    .sub-status {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sub-status.pending { background: var(--gold); color: var(--bg); }
+    .sub-status.approved { background: var(--green-ok); color: var(--bg); }
+    .sub-status.rejected { background: var(--red); color: var(--text); }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .photo-cell {
+      position: relative;
+      background: var(--green-dark);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .photo-cell img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-cell .photo-label {
+      font-size: 10px;
+      color: var(--dim);
+      padding: 4px 6px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .photo-cell .no-photo {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dim);
+      font-size: 12px;
+    }
+
+    .sub-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .action-btn.approve {
+      background: var(--green-ok);
+      color: var(--bg);
+    }
+
+    .action-btn.reject {
+      background: var(--red);
+      color: var(--text);
+    }
+
+    .review-info {
+      font-size: 12px;
+      color: var(--dim);
+      margin-top: 8px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 64px 20px;
+      color: var(--dim);
+      font-size: 16px;
+    }
+
+    .login-form {
+      max-width: 360px;
+      margin: 80px auto;
+      text-align: center;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--dim);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 16px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .login-form input:focus {
+      border-color: var(--gold);
+    }
+
+    .login-form button {
+      width: 100%;
+      padding: 14px;
+      background: var(--gold);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .checkin-time {
+      font-size: 11px;
+      color: var(--dim);
+      position: absolute;
+      bottom: 20px;
+      left: 6px;
+      background: rgba(0,0,0,0.6);
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div id="login-view" class="login-form">
+    <h1 style="margin-bottom: 24px;">CTF Admin</h1>
+    <input type="password" id="admin-key-input" placeholder="Admin Key" autofocus>
+    <button onclick="doLogin()">Enter</button>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+    <div class="header">
+      <h1>CAPTURE THE FLAG ATL — ADMIN</h1>
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="stat-num" id="stat-visitors">0</div>
+          <div class="stat-label">Visitors</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="stat-checkins">0</div>
+          <div class="stat-label">Check-ins</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="stat-pending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all" onclick="filterBy('all', this)">All</button>
+      <button class="filter-btn" data-filter="pending" onclick="filterBy('pending', this)">Pending</button>
+      <button class="filter-btn" data-filter="approved" onclick="filterBy('approved', this)">Approved</button>
+      <button class="filter-btn" data-filter="rejected" onclick="filterBy('rejected', this)">Rejected</button>
+      <button class="filter-btn" style="margin-left:auto;" onclick="loadData()">Refresh</button>
+    </div>
+
+    <div id="submissions-list" class="submissions-list"></div>
+  </div>
+
+  <script>
+    let adminKey = '';
+    let allData = null;
+    let currentFilter = 'all';
+
+    function doLogin() {
+      adminKey = document.getElementById('admin-key-input').value.trim();
+      if (!adminKey) return;
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadData();
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('admin-key-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    async function loadData() {
+      try {
+        const res = await fetch(`/api/admin?key=${encodeURIComponent(adminKey)}&status=${currentFilter}`);
+        if (res.status === 401) {
+          alert('Invalid admin key');
+          document.getElementById('login-view').style.display = 'block';
+          document.getElementById('dashboard').style.display = 'none';
+          return;
+        }
+        allData = await res.json();
+        renderStats(allData.stats);
+        renderSubmissions(allData.submissions);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      }
+    }
+
+    function renderStats(stats) {
+      document.getElementById('stat-visitors').textContent = stats.totalVisitors;
+      document.getElementById('stat-checkins').textContent = stats.totalCheckins;
+      document.getElementById('stat-pending').textContent = stats.pendingSubmissions;
+    }
+
+    function renderSubmissions(submissions) {
+      const container = document.getElementById('submissions-list');
+
+      if (!submissions || submissions.length === 0) {
+        container.innerHTML = '<div class="empty">No submissions yet.</div>';
+        return;
+      }
+
+      container.innerHTML = submissions.map(sub => {
+        const visitor = sub.visitor || {};
+        const checkins = sub.checkins || [];
+        const submitted = new Date(sub.created_at).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+        });
+
+        const photoGrid = checkins.map(c => {
+          const locName = c.location_id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const time = new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+          if (c.photo_url) {
+            return `<div class="photo-cell">
+              <img src="${escapeHtml(c.photo_url)}" alt="${escapeHtml(locName)}" loading="lazy" onclick="window.open('${escapeHtml(c.photo_url)}','_blank')">
+              <div class="photo-label">${escapeHtml(locName)}</div>
+              <span class="checkin-time">${time}</span>
+            </div>`;
+          }
+          return `<div class="photo-cell">
+            <div class="no-photo">No photo</div>
+            <div class="photo-label">${escapeHtml(locName)}</div>
+          </div>`;
+        }).join('');
+
+        const actions = sub.status === 'pending'
+          ? `<div class="sub-actions">
+              <button class="action-btn approve" onclick="reviewSubmission(${sub.id}, 'approved', this)">Approve</button>
+              <button class="action-btn reject" onclick="reviewSubmission(${sub.id}, 'rejected', this)">Reject</button>
+            </div>`
+          : `<div class="review-info">
+              ${sub.status === 'approved' ? 'Approved' : 'Rejected'}
+              ${sub.reviewed_by ? ' by ' + escapeHtml(sub.reviewed_by) : ''}
+              ${sub.reviewed_at ? ' on ' + new Date(sub.reviewed_at).toLocaleDateString() : ''}
+            </div>`;
+
+        return `<div class="submission-card status-${sub.status}">
+          <div class="sub-header">
+            <div class="sub-info">
+              <h3>${escapeHtml(visitor.first_name || 'Unknown')} — ${escapeHtml(visitor.email || '')}</h3>
+              <p>Submitted ${submitted} &bull; ${checkins.length} locations &bull; ID #${sub.id}</p>
+            </div>
+            <span class="sub-status ${sub.status}">${sub.status}</span>
+          </div>
+          <div class="photo-grid">${photoGrid}</div>
+          ${actions}
+        </div>`;
+      }).join('');
+    }
+
+    async function reviewSubmission(submissionId, status, btn) {
+      btn.disabled = true;
+      btn.textContent = status === 'approved' ? 'Approving...' : 'Rejecting...';
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': adminKey,
+          },
+          body: JSON.stringify({ submissionId, status, reviewedBy: 'admin' }),
+        });
+
+        if (res.ok) {
+          loadData(); // Refresh
+        } else {
+          alert('Failed to update submission');
+          btn.disabled = false;
+          btn.textContent = status === 'approved' ? 'Approve' : 'Reject';
+        }
+      } catch {
+        alert('Network error');
+        btn.disabled = false;
+        btn.textContent = status === 'approved' ? 'Approve' : 'Reject';
+      }
+    }
+
+    function filterBy(status, btn) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadData();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

@@ -7,7 +7,7 @@
 import { initCanvas, renderFrame, exportImage, getWindow } from './canvas.js';
 import { initTouch, setMinScale, destroyTouch } from './touch.js';
 import { getLocation, getLocationFromURL, LOCATIONS, TOTAL_LOCATIONS } from './locations.js';
-import { checkin, getCachedVisitor, getCachedProgress, fetchProgress, fetchLeaderboard } from './api.js';
+import { checkin, getCachedVisitor, getCachedProgress, fetchProgress, fetchLeaderboard, uploadPhoto, submitForReview } from './api.js';
 import { t, toggleLang, getLang } from './i18n.js';
 
 // ---- Format Definitions ----
@@ -245,11 +245,32 @@ async function handleSkipEmail() {
   await doDownload();
 }
 
+/**
+ * Generate a thumbnail from the canvas for server upload (480px wide max).
+ */
+function generateThumbnail() {
+  const maxW = 480;
+  const ratio = canvasEl.height / canvasEl.width;
+  const thumbW = Math.min(canvasEl.width, maxW);
+  const thumbH = Math.round(thumbW * ratio);
+
+  const thumb = document.createElement('canvas');
+  thumb.width = thumbW;
+  thumb.height = thumbH;
+  const tCtx = thumb.getContext('2d');
+  tCtx.drawImage(canvasEl, 0, 0, thumbW, thumbH);
+
+  return thumb.toDataURL('image/jpeg', 0.7);
+}
+
 async function doDownloadAndCheckin(email, firstName) {
   btnDownload.disabled = true;
   btnDownload.textContent = t('saving');
 
   try {
+    // Generate thumbnail before export (canvas still has the composed image)
+    const thumbnailData = generateThumbnail();
+
     // Download the image
     const result = await exportImage(canvasEl, state.locationSlug, state.formatName);
     if (result.ios) {
@@ -259,7 +280,16 @@ async function doDownloadAndCheckin(email, firstName) {
     // Register check-in (async, won't block)
     checkin(email, firstName, state.locationSlug, state.formatName);
 
-    goToScreen('done');
+    // Upload thumbnail for admin review (fire and forget)
+    uploadPhoto(email, state.locationSlug, thumbnailData);
+
+    // Check if all 16 captured → show completion screen
+    const progress = getCachedProgress();
+    if (progress.visited && progress.visited.length >= TOTAL_LOCATIONS) {
+      goToScreen('complete');
+    } else {
+      goToScreen('done');
+    }
   } catch {
     btnDownload.textContent = t('downloadPhoto');
     btnDownload.disabled = false;
@@ -303,11 +333,14 @@ async function showProgress() {
   const pct = Math.round((visited.length / total) * 100);
   progressBar.style.width = `${pct}%`;
 
-  // Message
+  // Message + submit button visibility
+  const btnSubmit = document.getElementById('btn-submit-review');
   if (visited.length >= total) {
     progressMessage.textContent = t('allCaptured');
+    if (btnSubmit) btnSubmit.classList.remove('hidden');
   } else {
     progressMessage.textContent = t('keepExploring');
+    if (btnSubmit) btnSubmit.classList.add('hidden');
   }
 
   // Location list
@@ -450,6 +483,59 @@ document.getElementById('btn-leaderboard')?.addEventListener('click', showLeader
 // Back from leaderboard
 document.getElementById('btn-leaderboard-back')?.addEventListener('click', () => {
   goToScreen('progress');
+});
+
+// Submit for review (from progress or completion screen)
+document.getElementById('btn-submit-review')?.addEventListener('click', async () => {
+  const visitor = getCachedVisitor();
+  if (!visitor?.email) {
+    showEmailModal();
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-review');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const result = await submitForReview(visitor.email);
+  if (result.success) {
+    goToScreen('submitted');
+  } else {
+    btn.textContent = t('submitForReview');
+    btn.disabled = false;
+    alert(result.error || 'Submission failed. Please try again.');
+  }
+});
+
+// Completion screen submit button
+document.getElementById('btn-complete-submit')?.addEventListener('click', async () => {
+  const visitor = getCachedVisitor();
+  if (!visitor?.email) {
+    showEmailModal();
+    return;
+  }
+
+  const btn = document.getElementById('btn-complete-submit');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const result = await submitForReview(visitor.email);
+  if (result.success) {
+    goToScreen('submitted');
+  } else {
+    btn.textContent = t('submitForReview');
+    btn.disabled = false;
+    alert(result.error || 'Submission failed. Please try again.');
+  }
+});
+
+// From submitted screen, go back to picker
+document.getElementById('btn-submitted-done')?.addEventListener('click', () => {
+  if (state.location) {
+    goToScreen('landing');
+  } else {
+    goToScreen('picker');
+  }
 });
 
 // Language toggle

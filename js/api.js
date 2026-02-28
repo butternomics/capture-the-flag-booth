@@ -157,6 +157,58 @@ export async function fetchProgress(email) {
   return getCachedProgress();
 }
 
+// ---- Photo Upload ----
+
+/**
+ * Upload a photo thumbnail to the server.
+ * @param {string} email
+ * @param {string} locationId
+ * @param {string} imageData - base64 JPEG data URL
+ * @returns {Promise<{success: boolean, photoUrl?: string}>}
+ */
+export async function uploadPhoto(email, locationId, imageData) {
+  try {
+    const res = await fetch(`${API_BASE}/upload-photo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, locationId, imageData }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, photoUrl: data.photoUrl };
+    }
+    return { success: false };
+  } catch {
+    return { success: false };
+  }
+}
+
+// ---- Submission ----
+
+/**
+ * Submit for review after capturing all 16 flags.
+ * @param {string} email
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function submitForReview(email) {
+  try {
+    const res = await fetch(`${API_BASE}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      return { success: true, submissionId: data.submissionId };
+    }
+    return { success: false, error: data.error };
+  } catch {
+    return { success: false, error: 'Network error' };
+  }
+}
+
 // ---- Leaderboard ----
 
 /**

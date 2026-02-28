@@ -174,8 +174,35 @@
       <ul id="progress-list" class="progress-list"></ul>
 
       <div class="progress-actions">
+        <button id="btn-submit-review" class="btn btn-gold btn-full hidden" data-i18n="submitForReview">Submit for Review</button>
         <button id="btn-capture-more" class="btn btn-primary btn-full" data-i18n="captureMore">Capture More Flags</button>
         <button id="btn-leaderboard" class="btn btn-secondary btn-full" data-i18n="leaderboard">Leaderboard</button>
+      </div>
+    </section>
+
+    <!-- SCREEN: Completion (all 16 captured!) -->
+    <section id="screen-complete" class="screen">
+      <div class="done-content">
+        <div class="complete-trophy">&#127942;</div>
+        <h2>You Captured All 16 Flags!</h2>
+        <p class="done-message">You've explored every neighborhood. Submit your journey for review to claim your prize.</p>
+      </div>
+      <div class="done-actions">
+        <button id="btn-complete-submit" class="btn btn-gold btn-full" data-i18n="submitForReview">Submit for Review</button>
+        <button class="btn btn-secondary btn-full" onclick="document.getElementById('app').setAttribute('data-screen','progress')">View Progress</button>
+      </div>
+    </section>
+
+    <!-- SCREEN: Submitted (confirmation) -->
+    <section id="screen-submitted" class="screen">
+      <div class="done-content">
+        <div class="done-check">&#10003;</div>
+        <h2>Submission Received!</h2>
+        <p class="done-message">Your photos are being reviewed. We'll be in touch once your journey is verified.</p>
+        <p class="submitted-note">Keep an eye on your email for updates.</p>
+      </div>
+      <div class="done-actions">
+        <button id="btn-submitted-done" class="btn btn-primary btn-full">Done</button>
       </div>
     </section>
 

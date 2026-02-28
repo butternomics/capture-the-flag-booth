@@ -56,6 +56,8 @@ const STRINGS = {
     showcaseAtlanta: 'Showcase Atlanta',
 
     // Language toggle
+    submitForReview: 'Submit for Review',
+
     switchLang: 'Espa\u00f1ol',
   },
 
@@ -102,6 +104,8 @@ const STRINGS = {
 
     footer: 'Bienvenido al Mundo de Atlanta',
     showcaseAtlanta: 'Showcase Atlanta',
+
+    submitForReview: 'Enviar para Revisi\u00f3n',
 
     switchLang: 'English',
   },
