@@ -193,6 +193,20 @@ body {
   color: var(--color-text-dim);
 }
 
+.location-card-captured {
+  border-color: var(--color-gold);
+  position: relative;
+}
+
+.location-card-check {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
 /* ========================================
    LANDING SCREEN
    ======================================== */
@@ -589,16 +603,23 @@ body {
   margin-bottom: 8px;
 }
 
+.done-location {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--color-gold);
+  margin-bottom: 4px;
+}
+
+.done-progress {
+  font-size: 14px;
+  color: var(--color-text-dim);
+  margin-bottom: 12px;
+}
+
 .done-message {
   font-size: 15px;
   color: var(--color-text-dim);
   line-height: 1.5;
-}
-
-.ios-hint {
-  font-size: 13px;
-  color: var(--color-gold);
-  margin-top: 12px;
 }
 
 .done-actions {

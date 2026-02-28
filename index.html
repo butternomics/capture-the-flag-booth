@@ -114,7 +114,7 @@
           <span data-i18n="changePhoto">Change Photo</span>
         </button>
         <button id="btn-download" class="btn btn-primary" disabled>
-          <span data-i18n="downloadPhoto">Download Photo</span>
+          <span data-i18n="saveAndCheckin">Save & Check In</span>
         </button>
       </div>
       <p id="edit-hint" class="hint" data-i18n="dragHint">Drag to position. Pinch to zoom.</p>
@@ -141,10 +141,11 @@
     <!-- SCREEN: Done -->
     <section id="screen-done" class="screen">
       <div class="done-content">
-        <div class="done-check">&#10003;</div>
-        <h2 data-i18n="photoSaved">Photo Saved!</h2>
+        <div class="done-check">&#127987;</div>
+        <h2 data-i18n="flagCaptured">Flag Captured!</h2>
+        <p id="done-location-name" class="done-location"></p>
+        <p id="done-progress" class="done-progress"></p>
         <p class="done-message"><span data-i18n="shareMessage">Share it with</span> <strong>#CaptureTheFlagATL</strong></p>
-        <p id="ios-hint" class="ios-hint" hidden data-i18n="iosHint">Long-press the image to save it to your camera roll.</p>
       </div>
       <div class="done-actions">
         <button id="btn-another" class="btn btn-primary btn-full" data-i18n="captureAnother">Capture Another Flag</button>

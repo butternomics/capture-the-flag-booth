@@ -36,7 +36,6 @@ const canvasEl = document.getElementById('preview-canvas');
 const photoInput = document.getElementById('photo-input');
 const uploadOverlay = document.getElementById('upload-overlay');
 const editHint = document.getElementById('edit-hint');
-const iosHint = document.getElementById('ios-hint');
 
 // Buttons
 const btnDownload = document.getElementById('btn-download');
@@ -125,14 +124,20 @@ function showLocationPicker() {
   const pickerGrid = document.getElementById('location-picker-grid');
   if (!pickerGrid) return;
 
+  // Get cached progress to show captured indicators
+  const progress = getCachedProgress();
+  const visited = progress.visited || [];
+
   pickerGrid.innerHTML = '';
   for (const [slug, loc] of Object.entries(LOCATIONS)) {
+    const isCaptured = visited.includes(slug);
     const btn = document.createElement('button');
-    btn.className = 'location-card';
+    btn.className = 'location-card' + (isCaptured ? ' location-card-captured' : '');
     btn.innerHTML = `
       <span class="location-card-flag">${loc.flag}</span>
       <span class="location-card-name">${loc.name}</span>
       <span class="location-card-country">${loc.country}</span>
+      ${isCaptured ? '<span class="location-card-check">\u2713</span>' : ''}
     `;
     btn.addEventListener('click', () => {
       // Update URL without reload
@@ -202,7 +207,7 @@ function resetPhotoState() {
   state.photoY = 0;
   state.photoScale = 1;
   btnDownload.disabled = true;
-  btnDownload.textContent = t('downloadPhoto');
+  btnDownload.textContent = t('saveAndCheckin');
   editHint.classList.remove('visible');
   uploadOverlay.classList.remove('hidden');
   photoInput.value = '';
@@ -272,10 +277,7 @@ async function doDownloadAndCheckin(email, firstName) {
     const thumbnailData = generateThumbnail();
 
     // Download the image
-    const result = await exportImage(canvasEl, state.locationSlug, state.formatName);
-    if (result.ios) {
-      iosHint.hidden = false;
-    }
+    await exportImage(canvasEl, state.locationSlug, state.formatName);
 
     // Register check-in (async, won't block)
     checkin(email, firstName, state.locationSlug, state.formatName);
@@ -283,15 +285,24 @@ async function doDownloadAndCheckin(email, firstName) {
     // Upload thumbnail for admin review (fire and forget)
     uploadPhoto(email, state.locationSlug, thumbnailData);
 
-    // Check if all 16 captured → show completion screen
+    // Populate done screen with location + progress
     const progress = getCachedProgress();
-    if (progress.visited && progress.visited.length >= TOTAL_LOCATIONS) {
+    const visited = progress.visited || [];
+    const count = visited.includes(state.locationSlug) ? visited.length : visited.length + 1;
+
+    const doneLocationEl = document.getElementById('done-location-name');
+    const doneProgressEl = document.getElementById('done-progress');
+    if (doneLocationEl) doneLocationEl.textContent = state.location?.name || '';
+    if (doneProgressEl) doneProgressEl.textContent = `${count} ${t('progressSoFar')}`;
+
+    // Check if all 16 captured → show completion screen
+    if (count >= TOTAL_LOCATIONS) {
       goToScreen('complete');
     } else {
       goToScreen('done');
     }
   } catch {
-    btnDownload.textContent = t('downloadPhoto');
+    btnDownload.textContent = t('saveAndCheckin');
     btnDownload.disabled = false;
   }
 }
@@ -301,13 +312,17 @@ async function doDownload() {
   btnDownload.textContent = t('saving');
 
   try {
-    const result = await exportImage(canvasEl, state.locationSlug, state.formatName);
-    if (result.ios) {
-      iosHint.hidden = false;
-    }
+    await exportImage(canvasEl, state.locationSlug, state.formatName);
+
+    // Populate done screen (no check-in since no email)
+    const doneLocationEl = document.getElementById('done-location-name');
+    const doneProgressEl = document.getElementById('done-progress');
+    if (doneLocationEl) doneLocationEl.textContent = state.location?.name || '';
+    if (doneProgressEl) doneProgressEl.textContent = '';
+
     goToScreen('done');
   } catch {
-    btnDownload.textContent = t('downloadPhoto');
+    btnDownload.textContent = t('saveAndCheckin');
     btnDownload.disabled = false;
   }
 }
@@ -454,7 +469,6 @@ btnBack.addEventListener('click', () => {
 
 // "Capture Another Flag" button
 btnAnother.addEventListener('click', () => {
-  iosHint.hidden = true;
   destroyTouch();
   resetAll();
   // Go back to landing for the same location, or picker

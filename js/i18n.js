@@ -18,7 +18,7 @@ const STRINGS = {
     // Edit screen
     tapToUpload: 'Tap to upload photo',
     changePhoto: 'Change Photo',
-    downloadPhoto: 'Download Photo',
+    saveAndCheckin: 'Save & Check In',
     saving: 'Saving...',
     dragHint: 'Drag to position. Pinch to zoom.',
     back: 'Back',
@@ -32,9 +32,10 @@ const STRINGS = {
     skipForNow: 'Skip for now',
 
     // Done screen
-    photoSaved: 'Photo Saved!',
+    flagCaptured: 'Flag Captured!',
+    checkedInAt: 'Checked in at',
+    progressSoFar: 'of 16 flags captured',
     shareMessage: 'Share it with',
-    iosHint: 'Long-press the image to save it to your camera roll.',
     captureAnother: 'Capture Another Flag',
     viewProgress: 'View My Progress',
 
@@ -73,7 +74,7 @@ const STRINGS = {
 
     tapToUpload: 'Toca para subir foto',
     changePhoto: 'Cambiar Foto',
-    downloadPhoto: 'Descargar Foto',
+    saveAndCheckin: 'Guardar y Registrar',
     saving: 'Guardando...',
     dragHint: 'Arrastra para posicionar. Pellizca para zoom.',
     back: 'Volver',
@@ -85,9 +86,10 @@ const STRINGS = {
     downloadMyPhoto: 'Descargar Mi Foto',
     skipForNow: 'Saltar por ahora',
 
-    photoSaved: '\u00a1Foto Guardada!',
+    flagCaptured: '\u00a1Bandera Capturada!',
+    checkedInAt: 'Registrado en',
+    progressSoFar: 'de 16 banderas capturadas',
     shareMessage: 'Comp\u00e1rtela con',
-    iosHint: 'Mant\u00e9n presionada la imagen para guardarla.',
     captureAnother: 'Captura Otra Bandera',
     viewProgress: 'Ver Mi Progreso',
 
