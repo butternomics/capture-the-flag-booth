@@ -12,6 +12,7 @@
       --gold-dim: #A68B3C;
       --bg: #1A1710;
       --card: #2C2418;
+      --card-hover: #3A3020;
       --text: #F5F0E8;
       --dim: #A89E8C;
       --red: #C94E4E;
@@ -25,437 +26,425 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 24px;
     }
 
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    h1 {
-      font-size: 24px;
-      color: var(--gold);
-      letter-spacing: 2px;
-    }
-
-    .stats-bar {
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-
-    .stat {
-      text-align: center;
-    }
-
-    .stat-num {
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--gold);
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .filters {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      padding: 8px 16px;
-      border: 1px solid var(--dim);
-      border-radius: 6px;
-      background: transparent;
-      color: var(--text);
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-
-    .filter-btn.active {
-      background: var(--gold);
-      color: var(--bg);
-      border-color: var(--gold);
-    }
-
-    .filter-btn:hover {
-      border-color: var(--gold);
-    }
-
-    .submissions-list {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .submission-card {
-      background: var(--card);
-      border: 1px solid var(--green);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .submission-card.status-pending {
-      border-left: 4px solid var(--gold);
-    }
-
-    .submission-card.status-approved {
-      border-left: 4px solid var(--green-ok);
-    }
-
-    .submission-card.status-rejected {
-      border-left: 4px solid var(--red);
-    }
-
-    .sub-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .sub-info h3 {
-      font-size: 18px;
-      margin-bottom: 2px;
-    }
-
-    .sub-info p {
-      font-size: 13px;
-      color: var(--dim);
-    }
-
-    .sub-status {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .sub-status.pending { background: var(--gold); color: var(--bg); }
-    .sub-status.approved { background: var(--green-ok); color: var(--bg); }
-    .sub-status.rejected { background: var(--red); color: var(--text); }
-
-    .photo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .photo-cell {
-      position: relative;
-      background: var(--green-dark);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .photo-cell img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .photo-cell .photo-label {
-      font-size: 10px;
-      color: var(--dim);
-      padding: 4px 6px;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .photo-cell .no-photo {
-      height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--dim);
-      font-size: 12px;
-    }
-
-    .sub-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .action-btn {
-      padding: 10px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .action-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .action-btn.approve {
-      background: var(--green-ok);
-      color: var(--bg);
-    }
-
-    .action-btn.reject {
-      background: var(--red);
-      color: var(--text);
-    }
-
-    .review-info {
-      font-size: 12px;
-      color: var(--dim);
-      margin-top: 8px;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 64px 20px;
-      color: var(--dim);
-      font-size: 16px;
-    }
-
+    /* ---- Login ---- */
     .login-form {
       max-width: 360px;
       margin: 80px auto;
       text-align: center;
+      padding: 0 20px;
     }
-
+    .login-form h1 { font-size: 24px; color: var(--gold); margin-bottom: 24px; letter-spacing: 2px; }
     .login-form input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--dim);
-      border-radius: 8px;
-      background: var(--card);
-      color: var(--text);
-      font-size: 16px;
-      margin-bottom: 12px;
-      outline: none;
+      width: 100%; padding: 14px 16px; border: 1px solid var(--dim); border-radius: 8px;
+      background: var(--card); color: var(--text); font-size: 16px; margin-bottom: 12px; outline: none;
     }
-
-    .login-form input:focus {
-      border-color: var(--gold);
-    }
-
+    .login-form input:focus { border-color: var(--gold); }
     .login-form button {
-      width: 100%;
-      padding: 14px;
-      background: var(--gold);
-      color: var(--bg);
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
+      width: 100%; padding: 14px; background: var(--gold); color: var(--bg);
+      border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
     }
 
-    .checkin-time {
-      font-size: 11px;
-      color: var(--dim);
-      position: absolute;
-      bottom: 20px;
-      left: 6px;
-      background: rgba(0,0,0,0.6);
-      padding: 2px 4px;
-      border-radius: 3px;
+    /* ---- Dashboard Layout ---- */
+    #dashboard { display: none; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px; border-bottom: 1px solid var(--green); flex-wrap: wrap; gap: 12px;
     }
+    .topbar h1 { font-size: 18px; color: var(--gold); letter-spacing: 2px; }
+    .topbar-actions { display: flex; gap: 8px; }
+    .refresh-btn {
+      padding: 8px 16px; border: 1px solid var(--dim); border-radius: 6px;
+      background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
+    }
+    .refresh-btn:hover { border-color: var(--gold); }
+
+    .content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+    /* ---- Stats Grid ---- */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--card); border-radius: 10px; padding: 20px; text-align: center;
+    }
+    .stat-num { font-size: 36px; font-weight: 800; color: var(--gold); }
+    .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+    /* ---- Tabs ---- */
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--green); padding-bottom: 0; }
+    .tab {
+      padding: 10px 20px; border: none; background: transparent; color: var(--dim);
+      cursor: pointer; font-size: 14px; font-weight: 600; border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab:hover { color: var(--text); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ---- Leaderboard ---- */
+    .leader-table { width: 100%; border-collapse: collapse; }
+    .leader-table th {
+      text-align: left; padding: 10px 14px; font-size: 11px; color: var(--dim);
+      text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--green);
+    }
+    .leader-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+    .leader-table tr:hover td { background: var(--card); }
+    .leader-rank { font-size: 18px; font-weight: 800; color: var(--gold); width: 40px; }
+    .leader-name { font-weight: 600; }
+    .leader-email { color: var(--dim); font-size: 13px; }
+    .leader-email a { color: var(--gold); text-decoration: none; }
+    .leader-email a:hover { text-decoration: underline; }
+    .leader-count { font-weight: 700; }
+    .leader-bar { width: 120px; }
+    .leader-bar-track { width: 100%; height: 6px; background: var(--green-dark); border-radius: 3px; }
+    .leader-bar-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.3s; }
+    .leader-complete { color: var(--green-ok); font-weight: 700; }
+    .leader-status-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-pending { background: var(--gold); color: var(--bg); }
+    .badge-approved { background: var(--green-ok); color: var(--bg); }
+    .badge-rejected { background: var(--red); color: var(--text); }
+
+    .expand-btn {
+      background: none; border: none; color: var(--dim); cursor: pointer; font-size: 18px;
+      padding: 2px 8px; transition: transform 0.2s;
+    }
+    .expand-btn.open { transform: rotate(90deg); }
+
+    .leader-detail { display: none; }
+    .leader-detail.open { display: table-row; }
+    .leader-detail td { padding: 12px 14px; background: var(--card); }
+
+    .detail-photos {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 6px;
+    }
+    .detail-photo {
+      background: var(--green-dark); border-radius: 6px; overflow: hidden; text-align: center;
+    }
+    .detail-photo img { width: 100%; height: 90px; object-fit: cover; display: block; cursor: pointer; }
+    .detail-photo .loc-label { font-size: 10px; color: var(--dim); padding: 3px 4px; }
+    .detail-photo .no-photo {
+      height: 90px; display: flex; align-items: center; justify-content: center;
+      color: var(--dim); font-size: 11px;
+    }
+    .detail-actions { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+    .action-btn {
+      padding: 8px 20px; border: none; border-radius: 6px; font-size: 13px;
+      font-weight: 600; cursor: pointer;
+    }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .action-btn.approve { background: var(--green-ok); color: var(--bg); }
+    .action-btn.reject { background: var(--red); color: var(--text); }
+
+    /* ---- Activity Feed ---- */
+    .activity-list { display: flex; flex-direction: column; gap: 4px; }
+    .activity-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+      background: var(--card); border-radius: 8px; font-size: 14px;
+    }
+    .activity-time { font-size: 12px; color: var(--dim); min-width: 80px; }
+    .activity-name { font-weight: 600; }
+    .activity-loc { color: var(--gold); }
+    .activity-photo { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; margin-left: auto; cursor: pointer; }
+
+    /* ---- Location Stats ---- */
+    .loc-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+    .loc-stat-card {
+      display: flex; align-items: center; gap: 12px; padding: 14px;
+      background: var(--card); border-radius: 8px;
+    }
+    .loc-stat-count { font-size: 24px; font-weight: 800; color: var(--gold); min-width: 36px; text-align: center; }
+    .loc-stat-name { font-size: 13px; font-weight: 600; }
+    .loc-stat-sub { font-size: 11px; color: var(--dim); }
+
+    .empty { text-align: center; padding: 48px 20px; color: var(--dim); font-size: 15px; }
   </style>
 </head>
 <body>
+
   <div id="login-view" class="login-form">
-    <h1 style="margin-bottom: 24px;">CTF Admin</h1>
+    <h1>CTF ADMIN</h1>
     <input type="password" id="admin-key-input" placeholder="Admin Key" autofocus>
     <button onclick="doLogin()">Enter</button>
   </div>
 
-  <div id="dashboard" style="display:none;">
-    <div class="header">
-      <h1>CAPTURE THE FLAG ATL — ADMIN</h1>
-      <div class="stats-bar">
-        <div class="stat">
-          <div class="stat-num" id="stat-visitors">0</div>
-          <div class="stat-label">Visitors</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num" id="stat-checkins">0</div>
-          <div class="stat-label">Check-ins</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num" id="stat-pending">0</div>
-          <div class="stat-label">Pending</div>
-        </div>
+  <div id="dashboard">
+    <div class="topbar">
+      <h1>CAPTURE THE FLAG ATL</h1>
+      <div class="topbar-actions">
+        <button class="refresh-btn" onclick="loadData()">Refresh</button>
       </div>
     </div>
 
-    <div class="filters">
-      <button class="filter-btn active" data-filter="all" onclick="filterBy('all', this)">All</button>
-      <button class="filter-btn" data-filter="pending" onclick="filterBy('pending', this)">Pending</button>
-      <button class="filter-btn" data-filter="approved" onclick="filterBy('approved', this)">Approved</button>
-      <button class="filter-btn" data-filter="rejected" onclick="filterBy('rejected', this)">Rejected</button>
-      <button class="filter-btn" style="margin-left:auto;" onclick="loadData()">Refresh</button>
-    </div>
+    <div class="content">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="s-visitors">0</div><div class="stat-label">Visitors</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-checkins">0</div><div class="stat-label">Check-ins</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-completers">0</div><div class="stat-label">Completers</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-pending">0</div><div class="stat-label">Pending Review</div></div>
+      </div>
 
-    <div id="submissions-list" class="submissions-list"></div>
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('leaderboard', this)">Leaderboard</button>
+        <button class="tab" onclick="switchTab('activity', this)">Recent Activity</button>
+        <button class="tab" onclick="switchTab('locations', this)">Locations</button>
+      </div>
+
+      <!-- Leaderboard -->
+      <div id="tab-leaderboard" class="tab-panel active">
+        <table class="leader-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Flags</th>
+              <th>Progress</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Activity -->
+      <div id="tab-activity" class="tab-panel">
+        <div id="activity-feed" class="activity-list"></div>
+      </div>
+
+      <!-- Locations -->
+      <div id="tab-locations" class="tab-panel">
+        <div id="location-stats" class="loc-stats"></div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    let adminKey = '';
-    let allData = null;
-    let currentFilter = 'all';
+<script>
+const LOCATIONS = {
+  'jackson-street-bridge': { name: 'Jackson Street Bridge', flag: '\u{1F1EA}\u{1F1F8}' },
+  'ponce-city-market': { name: 'Ponce City Market', flag: '\u{1F1F2}\u{1F1E6}' },
+  'krog-street-market': { name: 'Krog Street Market', flag: '\u{1F1FF}\u{1F1E6}' },
+  'pittsburgh-yards': { name: 'Pittsburgh Yards', flag: '\u{1F1E8}\u{1F1FB}' },
+  'piedmont-park': { name: 'Piedmont Park', flag: '\u{1F1F8}\u{1F1E6}' },
+  'buckhead-village': { name: 'Buckhead Village', flag: '\u{1F1ED}\u{1F1F9}' },
+  'west-end': { name: 'West End', flag: '\u{1F1FA}\u{1F1FF}' },
+  'little-five-points': { name: 'Little Five Points', flag: '\u{1F30D}' },
+  'east-atlanta-village': { name: 'East Atlanta Village', flag: '\u{1F30D}' },
+  'sweet-auburn': { name: 'Sweet Auburn', flag: '\u{1F3DB}\u{FE0F}' },
+  'auc-clark-atlanta': { name: 'AUC / Clark Atlanta', flag: '\u{1F3DB}\u{FE0F}' },
+  'castleberry-hill': { name: 'Castleberry Hill', flag: '\u{1F3A8}' },
+  'centennial-olympic-park': { name: 'Centennial Olympic Park', flag: '\u{26BD}' },
+  'pemberton-place': { name: 'Pemberton Place', flag: '\u{26BD}' },
+  'hartsfield-jackson-airport': { name: 'Hartsfield-Jackson Airport', flag: '\u{2708}\u{FE0F}' },
+  'oca-mural-network': { name: 'OCA Mural Network', flag: '\u{2B50}' },
+};
 
-    function doLogin() {
-      adminKey = document.getElementById('admin-key-input').value.trim();
-      if (!adminKey) return;
-      document.getElementById('login-view').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadData();
+let adminKey = '';
+let dashData = null;
+
+function doLogin() {
+  adminKey = document.getElementById('admin-key-input').value.trim();
+  if (!adminKey) return;
+  document.getElementById('login-view').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadData();
+}
+
+document.getElementById('admin-key-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/admin?key=' + encodeURIComponent(adminKey));
+    if (res.status === 401) {
+      alert('Invalid admin key');
+      document.getElementById('login-view').style.display = 'block';
+      document.getElementById('dashboard').style.display = 'none';
+      return;
+    }
+    dashData = await res.json();
+    renderAll();
+  } catch (err) {
+    console.error('Load failed:', err);
+  }
+}
+
+function renderAll() {
+  if (!dashData) return;
+  renderStats();
+  renderLeaderboard();
+  renderActivity();
+  renderLocations();
+}
+
+function renderStats() {
+  const s = dashData.stats;
+  document.getElementById('s-visitors').textContent = s.totalVisitors;
+  document.getElementById('s-checkins').textContent = s.totalCheckins;
+  document.getElementById('s-completers').textContent = s.completers;
+  document.getElementById('s-pending').textContent = s.pendingSubmissions;
+}
+
+function renderLeaderboard() {
+  const body = document.getElementById('leaderboard-body');
+  const leaders = dashData.leaderboard || [];
+
+  if (!leaders.length) {
+    body.innerHTML = '<tr><td colspan="7" class="empty">No visitors yet.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = leaders.map((l, i) => {
+    const pct = Math.round((l.locationsCount / 16) * 100);
+    const isComplete = l.locationsCount >= 16;
+
+    let statusBadge = '';
+    if (l.submission) {
+      const cls = 'badge-' + l.submission.status;
+      statusBadge = '<span class="leader-status-badge ' + cls + '">' + l.submission.status + '</span>';
+    } else if (isComplete) {
+      statusBadge = '<span class="leader-status-badge badge-pending" style="opacity:0.5">No submission</span>';
     }
 
-    // Allow Enter key to submit
-    document.getElementById('admin-key-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') doLogin();
+    // Build detail photos for all 16 locations
+    const checkinMap = {};
+    for (const c of l.checkins) {
+      if (!checkinMap[c.location_id]) checkinMap[c.location_id] = c;
+    }
+
+    let photoHtml = '';
+    for (const [slug, loc] of Object.entries(LOCATIONS)) {
+      const c = checkinMap[slug];
+      if (c && c.photo_url) {
+        photoHtml += '<div class="detail-photo">' +
+          '<img src="' + esc(c.photo_url) + '" alt="' + esc(loc.name) + '" loading="lazy" onclick="window.open(\'' + esc(c.photo_url) + '\',\'_blank\')">' +
+          '<div class="loc-label">' + loc.flag + ' ' + esc(loc.name) + '</div></div>';
+      } else if (c) {
+        photoHtml += '<div class="detail-photo"><div class="no-photo">No photo</div>' +
+          '<div class="loc-label">' + loc.flag + ' ' + esc(loc.name) + '</div></div>';
+      } else {
+        photoHtml += '<div class="detail-photo" style="opacity:0.3"><div class="no-photo">--</div>' +
+          '<div class="loc-label">' + loc.flag + ' ' + esc(loc.name) + '</div></div>';
+      }
+    }
+
+    let actionsHtml = '';
+    if (l.submission && l.submission.status === 'pending') {
+      actionsHtml = '<div class="detail-actions">' +
+        '<button class="action-btn approve" onclick="reviewSubmission(' + l.submission.id + ', \'approved\', this)">Approve Winner</button>' +
+        '<button class="action-btn reject" onclick="reviewSubmission(' + l.submission.id + ', \'rejected\', this)">Reject</button></div>';
+    } else if (l.submission) {
+      actionsHtml = '<div class="detail-actions" style="color:var(--dim);font-size:13px;">' +
+        (l.submission.status === 'approved' ? 'Approved' : 'Rejected') +
+        (l.submission.reviewed_at ? ' on ' + new Date(l.submission.reviewed_at).toLocaleDateString() : '') + '</div>';
+    }
+
+    return '<tr onclick="toggleDetail(' + i + ')">' +
+      '<td class="leader-rank">' + (i + 1) + '</td>' +
+      '<td class="leader-name">' + esc(l.firstName) + '</td>' +
+      '<td class="leader-email"><a href="mailto:' + esc(l.email) + '">' + esc(l.email) + '</a></td>' +
+      '<td class="leader-count' + (isComplete ? ' leader-complete' : '') + '">' + l.locationsCount + '/16</td>' +
+      '<td class="leader-bar"><div class="leader-bar-track"><div class="leader-bar-fill" style="width:' + pct + '%"></div></div></td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td><button class="expand-btn" id="expand-' + i + '">&#9654;</button></td>' +
+      '</tr>' +
+      '<tr class="leader-detail" id="detail-' + i + '"><td colspan="7">' + photoHtml + actionsHtml + '</td></tr>';
+  }).join('');
+}
+
+function toggleDetail(idx) {
+  const detail = document.getElementById('detail-' + idx);
+  const btn = document.getElementById('expand-' + idx);
+  detail.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function renderActivity() {
+  const feed = document.getElementById('activity-feed');
+  const items = dashData.recentActivity || [];
+
+  if (!items.length) {
+    feed.innerHTML = '<div class="empty">No activity yet.</div>';
+    return;
+  }
+
+  feed.innerHTML = items.map(a => {
+    const loc = LOCATIONS[a.location_id] || { name: a.location_id, flag: '' };
+    const time = new Date(a.created_at);
+    const timeStr = time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+      ' ' + time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    let photoImg = '';
+    if (a.photo_url) {
+      photoImg = '<img class="activity-photo" src="' + esc(a.photo_url) + '" onclick="window.open(\'' + esc(a.photo_url) + '\',\'_blank\')" loading="lazy">';
+    }
+
+    return '<div class="activity-item">' +
+      '<span class="activity-time">' + timeStr + '</span>' +
+      '<span class="activity-name">' + esc(a.visitorName) + '</span>' +
+      '<span>checked in at</span>' +
+      '<span class="activity-loc">' + loc.flag + ' ' + esc(loc.name) + '</span>' +
+      photoImg + '</div>';
+  }).join('');
+}
+
+function renderLocations() {
+  const container = document.getElementById('location-stats');
+  const counts = dashData.locationCounts || {};
+
+  const sorted = Object.entries(LOCATIONS)
+    .map(([slug, loc]) => ({ slug, ...loc, count: counts[slug] || 0 }))
+    .sort((a, b) => b.count - a.count);
+
+  container.innerHTML = sorted.map(l =>
+    '<div class="loc-stat-card">' +
+      '<div class="loc-stat-count">' + l.count + '</div>' +
+      '<div><div class="loc-stat-name">' + l.flag + ' ' + esc(l.name) + '</div>' +
+      '<div class="loc-stat-sub">check-ins</div></div>' +
+    '</div>'
+  ).join('');
+}
+
+async function reviewSubmission(subId, status, btn) {
+  btn.disabled = true;
+  btn.textContent = status === 'approved' ? 'Approving...' : 'Rejecting...';
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ submissionId: subId, status, reviewedBy: 'admin' }),
     });
+    if (res.ok) { loadData(); }
+    else { alert('Failed'); btn.disabled = false; btn.textContent = status === 'approved' ? 'Approve Winner' : 'Reject'; }
+  } catch { alert('Network error'); btn.disabled = false; }
+}
 
-    async function loadData() {
-      try {
-        const res = await fetch(`/api/admin?key=${encodeURIComponent(adminKey)}&status=${currentFilter}`);
-        if (res.status === 401) {
-          alert('Invalid admin key');
-          document.getElementById('login-view').style.display = 'block';
-          document.getElementById('dashboard').style.display = 'none';
-          return;
-        }
-        allData = await res.json();
-        renderStats(allData.stats);
-        renderSubmissions(allData.submissions);
-      } catch (err) {
-        console.error('Failed to load data:', err);
-      }
-    }
-
-    function renderStats(stats) {
-      document.getElementById('stat-visitors').textContent = stats.totalVisitors;
-      document.getElementById('stat-checkins').textContent = stats.totalCheckins;
-      document.getElementById('stat-pending').textContent = stats.pendingSubmissions;
-    }
-
-    function renderSubmissions(submissions) {
-      const container = document.getElementById('submissions-list');
-
-      if (!submissions || submissions.length === 0) {
-        container.innerHTML = '<div class="empty">No submissions yet.</div>';
-        return;
-      }
-
-      container.innerHTML = submissions.map(sub => {
-        const visitor = sub.visitor || {};
-        const checkins = sub.checkins || [];
-        const submitted = new Date(sub.created_at).toLocaleDateString('en-US', {
-          month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
-        });
-
-        const photoGrid = checkins.map(c => {
-          const locName = c.location_id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          const time = new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-          if (c.photo_url) {
-            return `<div class="photo-cell">
-              <img src="${escapeHtml(c.photo_url)}" alt="${escapeHtml(locName)}" loading="lazy" onclick="window.open('${escapeHtml(c.photo_url)}','_blank')">
-              <div class="photo-label">${escapeHtml(locName)}</div>
-              <span class="checkin-time">${time}</span>
-            </div>`;
-          }
-          return `<div class="photo-cell">
-            <div class="no-photo">No photo</div>
-            <div class="photo-label">${escapeHtml(locName)}</div>
-          </div>`;
-        }).join('');
-
-        const actions = sub.status === 'pending'
-          ? `<div class="sub-actions">
-              <button class="action-btn approve" onclick="reviewSubmission(${sub.id}, 'approved', this)">Approve</button>
-              <button class="action-btn reject" onclick="reviewSubmission(${sub.id}, 'rejected', this)">Reject</button>
-            </div>`
-          : `<div class="review-info">
-              ${sub.status === 'approved' ? 'Approved' : 'Rejected'}
-              ${sub.reviewed_by ? ' by ' + escapeHtml(sub.reviewed_by) : ''}
-              ${sub.reviewed_at ? ' on ' + new Date(sub.reviewed_at).toLocaleDateString() : ''}
-            </div>`;
-
-        return `<div class="submission-card status-${sub.status}">
-          <div class="sub-header">
-            <div class="sub-info">
-              <h3>${escapeHtml(visitor.first_name || 'Unknown')} — ${escapeHtml(visitor.email || '')}</h3>
-              <p>Submitted ${submitted} &bull; ${checkins.length} locations &bull; ID #${sub.id}</p>
-            </div>
-            <span class="sub-status ${sub.status}">${sub.status}</span>
-          </div>
-          <div class="photo-grid">${photoGrid}</div>
-          ${actions}
-        </div>`;
-      }).join('');
-    }
-
-    async function reviewSubmission(submissionId, status, btn) {
-      btn.disabled = true;
-      btn.textContent = status === 'approved' ? 'Approving...' : 'Rejecting...';
-
-      try {
-        const res = await fetch('/api/admin', {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Admin-Key': adminKey,
-          },
-          body: JSON.stringify({ submissionId, status, reviewedBy: 'admin' }),
-        });
-
-        if (res.ok) {
-          loadData(); // Refresh
-        } else {
-          alert('Failed to update submission');
-          btn.disabled = false;
-          btn.textContent = status === 'approved' ? 'Approve' : 'Reject';
-        }
-      } catch {
-        alert('Network error');
-        btn.disabled = false;
-        btn.textContent = status === 'approved' ? 'Approve' : 'Reject';
-      }
-    }
-
-    function filterBy(status, btn) {
-      currentFilter = status;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      loadData();
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-  </script>
+function esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+</script>
 </body>
 </html>

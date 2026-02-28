@@ -21,72 +21,91 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // GET: fetch all submissions with visitor info and photos
+  // GET: full dashboard data — all visitors, check-ins, leaderboard, activity
   if (req.method === 'GET') {
-    const statusFilter = req.query.status || 'all';
-
     try {
-      // Get all submissions with visitor info
-      let query = supabase
-        .from('submissions')
-        .select('id, status, reviewed_by, reviewed_at, created_at, visitor_id')
+      // All visitors
+      const { data: visitors } = await supabase
+        .from('visitors')
+        .select('id, email, first_name, created_at')
         .order('created_at', { ascending: false });
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data: submissions, error: subError } = await query;
-
-      if (subError || !submissions) {
-        return res.status(500).json({ error: 'Failed to fetch submissions' });
-      }
-
-      // Enrich each submission with visitor + check-in data
-      const enriched = [];
-      for (const sub of submissions) {
-        // Get visitor
-        const { data: visitor } = await supabase
-          .from('visitors')
-          .select('id, email, first_name, created_at')
-          .eq('id', sub.visitor_id)
-          .single();
-
-        // Get all check-ins with photos
-        const { data: checkins } = await supabase
-          .from('checkins')
-          .select('location_id, format, photo_url, created_at')
-          .eq('visitor_id', sub.visitor_id)
-          .order('created_at');
-
-        enriched.push({
-          ...sub,
-          visitor: visitor || null,
-          checkins: checkins || [],
-        });
-      }
-
-      // Also get summary stats
-      const { count: totalVisitors } = await supabase
-        .from('visitors')
-        .select('*', { count: 'exact', head: true });
-
-      const { count: totalCheckins } = await supabase
+      // All check-ins with photos
+      const { data: checkins } = await supabase
         .from('checkins')
-        .select('*', { count: 'exact', head: true });
+        .select('id, visitor_id, location_id, format, photo_url, created_at')
+        .order('created_at', { ascending: false });
 
-      const { count: pendingCount } = await supabase
+      // All submissions
+      const { data: submissions } = await supabase
         .from('submissions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
+        .select('id, visitor_id, status, reviewed_by, reviewed_at, created_at')
+        .order('created_at', { ascending: false });
+
+      // Build leaderboard: visitors ranked by unique locations
+      const visitorCheckins = {};
+      for (const c of (checkins || [])) {
+        if (!visitorCheckins[c.visitor_id]) visitorCheckins[c.visitor_id] = [];
+        visitorCheckins[c.visitor_id].push(c);
+      }
+
+      const visitorMap = {};
+      for (const v of (visitors || [])) {
+        visitorMap[v.id] = v;
+      }
+
+      const submissionMap = {};
+      for (const s of (submissions || [])) {
+        submissionMap[s.visitor_id] = s;
+      }
+
+      const leaderboard = Object.entries(visitorCheckins)
+        .map(([visitorId, cks]) => {
+          const v = visitorMap[visitorId];
+          const uniqueLocs = [...new Set(cks.map(c => c.location_id))];
+          return {
+            visitorId: Number(visitorId),
+            firstName: v?.first_name || 'Unknown',
+            email: v?.email || '',
+            joinedAt: v?.created_at || '',
+            locationsCount: uniqueLocs.length,
+            locations: uniqueLocs,
+            checkins: cks,
+            submission: submissionMap[visitorId] || null,
+          };
+        })
+        .sort((a, b) => b.locationsCount - a.locationsCount);
+
+      // Location popularity
+      const locationCounts = {};
+      for (const c of (checkins || [])) {
+        locationCounts[c.location_id] = (locationCounts[c.location_id] || 0) + 1;
+      }
+
+      // Recent activity (last 50 check-ins with visitor info)
+      const recentActivity = (checkins || []).slice(0, 50).map(c => ({
+        ...c,
+        visitorName: visitorMap[c.visitor_id]?.first_name || 'Unknown',
+        visitorEmail: visitorMap[c.visitor_id]?.email || '',
+      }));
+
+      // Stats
+      const totalVisitors = (visitors || []).length;
+      const totalCheckins = (checkins || []).length;
+      const completers = leaderboard.filter(l => l.locationsCount >= 16).length;
+      const pendingSubmissions = (submissions || []).filter(s => s.status === 'pending').length;
 
       return res.status(200).json({
-        submissions: enriched,
         stats: {
-          totalVisitors: totalVisitors || 0,
-          totalCheckins: totalCheckins || 0,
-          pendingSubmissions: pendingCount || 0,
+          totalVisitors,
+          totalCheckins,
+          completers,
+          pendingSubmissions,
         },
+        leaderboard,
+        locationCounts,
+        recentActivity,
+        submissions: submissions || [],
       });
     } catch {
       return res.status(500).json({ error: 'Internal server error' });
