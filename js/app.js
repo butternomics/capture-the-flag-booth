@@ -45,7 +45,6 @@ const btnCapture = document.getElementById('btn-capture');
 const btnAnother = document.getElementById('btn-another');
 const btnProgress = document.getElementById('btn-progress');
 const btnCaptureMore = document.getElementById('btn-capture-more');
-const btnLangToggle = document.getElementById('btn-lang');
 
 // Landing elements
 const landingLocationName = document.getElementById('landing-location-name');
@@ -87,23 +86,23 @@ function updateStrings() {
     const key = el.dataset.i18nPlaceholder;
     el.placeholder = t(key);
   });
-  if (btnLangToggle) {
-    btnLangToggle.textContent = t('switchLang');
-  }
+  document.querySelectorAll('.btn-lang-toggle').forEach(btn => {
+    btn.textContent = t('switchLang');
+  });
 }
 
 // ---- Location Initialization ----
 function initLocation() {
   const slug = getLocationFromURL();
   if (!slug) {
-    // No location param — show a location picker or default
-    showLocationPicker();
+    // No location param — show home screen
+    goToScreen('home');
     return;
   }
 
   const loc = getLocation(slug);
   if (!loc) {
-    showLocationPicker();
+    goToScreen('home');
     return;
   }
 
@@ -127,6 +126,20 @@ function showLocationPicker() {
   // Get cached progress to show captured indicators
   const progress = getCachedProgress();
   const visited = progress.visited || [];
+
+  // Update picker stats pill
+  const pickerStats = document.getElementById('picker-stats');
+  if (pickerStats) {
+    if (visited.length > 0) {
+      pickerStats.innerHTML = `
+        <span class="picker-stats-count">${visited.length}</span>
+        <span class="picker-stats-label">${t('progressSoFar')}</span>
+      `;
+      pickerStats.style.display = '';
+    } else {
+      pickerStats.style.display = 'none';
+    }
+  }
 
   pickerGrid.innerHTML = '';
   for (const [slug, loc] of Object.entries(LOCATIONS)) {
@@ -552,9 +565,14 @@ document.getElementById('btn-submitted-done')?.addEventListener('click', () => {
   }
 });
 
-// Language toggle
-if (btnLangToggle) {
-  btnLangToggle.addEventListener('click', () => {
+// "Get Started" button on home screen → show location picker
+document.getElementById('btn-get-started')?.addEventListener('click', () => {
+  showLocationPicker();
+});
+
+// Language toggle (class-based, works on all screens)
+document.querySelectorAll('.btn-lang-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
     toggleLang();
     updateStrings();
     // Re-populate location info if on landing
@@ -562,7 +580,7 @@ if (btnLangToggle) {
       landingCountry.textContent = `${t('pairedWith')} ${state.location.country}`;
     }
   });
-}
+});
 
 // Prevent default drag behavior
 document.addEventListener('dragover', (e) => e.preventDefault());

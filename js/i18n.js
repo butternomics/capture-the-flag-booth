@@ -4,6 +4,18 @@
 
 const STRINGS = {
   en: {
+    // Home screen
+    getStarted: 'Get Started',
+    homeEvent: 'Showcase Atlanta \u00d7 FIFA World Cup 2026',
+    homeDesc: 'Visit 16 iconic Atlanta neighborhoods, snap photos with custom frames, and compete to win prizes during the world\'s biggest sporting event.',
+    stepScan: 'Scan',
+    stepScanDesc: 'Find a flag and scan the QR code',
+    stepCapture: 'Capture',
+    stepCaptureDesc: 'Take a photo with a custom frame',
+    stepWin: 'Win',
+    stepWinDesc: 'Capture all 16 flags to claim prizes',
+    chooseNeighborhood: 'Choose a neighborhood',
+
     // Landing screen
     captureThisFlag: 'Capture This Flag',
     welcomeTo: 'Welcome to',
@@ -63,6 +75,17 @@ const STRINGS = {
   },
 
   es: {
+    getStarted: 'Comenzar',
+    homeEvent: 'Showcase Atlanta \u00d7 Copa Mundial FIFA 2026',
+    homeDesc: 'Visita 16 vecindarios ic\u00f3nicos de Atlanta, toma fotos con marcos personalizados y compite por premios durante el evento deportivo m\u00e1s grande del mundo.',
+    stepScan: 'Escanea',
+    stepScanDesc: 'Encuentra una bandera y escanea el c\u00f3digo QR',
+    stepCapture: 'Captura',
+    stepCaptureDesc: 'Toma una foto con un marco personalizado',
+    stepWin: 'Gana',
+    stepWinDesc: 'Captura las 16 banderas para ganar premios',
+    chooseNeighborhood: 'Elige un vecindario',
+
     captureThisFlag: 'Captura Esta Bandera',
     welcomeTo: 'Bienvenido a',
     pairedWith: 'Emparejado con',

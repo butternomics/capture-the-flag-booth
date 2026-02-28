@@ -3,41 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#1B3A2D">
+  <meta name="theme-color" content="#0A1612">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Capture the Flag ATL — Visit 16 Atlanta neighborhoods, take photos with custom frames, and track your progress during FIFA World Cup 2026">
   <title>Capture the Flag ATL — Showcase Atlanta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="app" data-screen="landing">
+  <div id="app" data-screen="home">
 
-    <!-- SCREEN: Location Picker (no ?loc= param) -->
-    <section id="screen-picker" class="screen">
-      <header class="app-header">
-        <div class="logo-lockup">
-          <h1 class="logo-text">CAPTURE THE FLAG</h1>
-          <p class="logo-sub">ATL</p>
+    <!-- SCREEN: Home -->
+    <section id="screen-home" class="screen">
+      <div class="home-hero">
+        <div class="home-ball">&#x26BD;</div>
+        <h1 class="home-title">CAPTURE<br>THE FLAG</h1>
+        <p class="home-atl">ATL</p>
+        <div class="home-divider"></div>
+        <p class="home-event" data-i18n="homeEvent">Showcase Atlanta &times; FIFA World Cup 2026</p>
+      </div>
+
+      <p class="home-desc" data-i18n="homeDesc">Visit 16 iconic Atlanta neighborhoods, snap photos with custom frames, and compete to win prizes during the world's biggest sporting event.</p>
+
+      <div class="home-steps">
+        <div class="home-step fade-in delay-1">
+          <div class="step-icon">&#x1F4CD;</div>
+          <h3 class="step-title" data-i18n="stepScan">Scan</h3>
+          <p class="step-desc" data-i18n="stepScanDesc">Find a flag and scan the QR code</p>
         </div>
-        <p class="tagline" data-i18n="showcaseAtlanta">Showcase Atlanta</p>
+        <div class="home-step fade-in delay-2">
+          <div class="step-icon">&#x1F4F8;</div>
+          <h3 class="step-title" data-i18n="stepCapture">Capture</h3>
+          <p class="step-desc" data-i18n="stepCaptureDesc">Take a photo with a custom frame</p>
+        </div>
+        <div class="home-step fade-in delay-3">
+          <div class="step-icon">&#x1F3C6;</div>
+          <h3 class="step-title" data-i18n="stepWin">Win</h3>
+          <p class="step-desc" data-i18n="stepWinDesc">Capture all 16 flags to claim prizes</p>
+        </div>
+      </div>
+
+      <button id="btn-get-started" class="btn btn-cta" data-i18n="getStarted">Get Started</button>
+
+      <footer class="app-footer">
+        <p class="footer-text" data-i18n="footer">World Welcome to Atlanta</p>
+        <button class="btn-text btn-lang btn-lang-toggle" data-i18n="switchLang">Espa&ntilde;ol</button>
+      </footer>
+    </section>
+
+    <!-- SCREEN: Location Picker -->
+    <section id="screen-picker" class="screen">
+      <header class="screen-header">
+        <div class="header-logo">
+          <h1 class="header-title">CAPTURE THE FLAG</h1>
+          <span class="header-atl">ATL</span>
+        </div>
       </header>
 
-      <p class="picker-prompt">Choose a neighborhood</p>
+      <div class="picker-stats" id="picker-stats"></div>
+      <p class="picker-prompt" data-i18n="chooseNeighborhood">Choose a neighborhood</p>
       <div id="location-picker-grid" class="picker-grid"></div>
 
       <footer class="app-footer">
         <p class="footer-text" data-i18n="footer">World Welcome to Atlanta</p>
-        <button id="btn-lang" class="btn-text btn-lang" data-i18n="switchLang">Espa&ntilde;ol</button>
+        <button class="btn-text btn-lang btn-lang-toggle" data-i18n="switchLang">Espa&ntilde;ol</button>
       </footer>
     </section>
 
     <!-- SCREEN: Location Landing -->
     <section id="screen-landing" class="screen">
-      <header class="app-header">
-        <div class="logo-lockup">
-          <h1 class="logo-text">CAPTURE THE FLAG</h1>
-          <p class="logo-sub">ATL</p>
+      <header class="screen-header">
+        <div class="header-logo">
+          <h1 class="header-title">CAPTURE THE FLAG</h1>
+          <span class="header-atl">ATL</span>
         </div>
       </header>
 
@@ -48,9 +89,7 @@
         <p id="landing-tagline" class="landing-tagline"></p>
       </div>
 
-      <button id="btn-capture" class="btn btn-primary btn-lg">
-        <span data-i18n="captureThisFlag">Capture This Flag</span>
-      </button>
+      <button id="btn-capture" class="btn btn-cta" data-i18n="captureThisFlag">Capture This Flag</button>
 
       <footer class="app-footer">
         <p class="footer-text" data-i18n="footer">World Welcome to Atlanta</p>
@@ -114,7 +153,7 @@
           <span data-i18n="changePhoto">Change Photo</span>
         </button>
         <button id="btn-download" class="btn btn-primary" disabled>
-          <span data-i18n="saveAndCheckin">Save & Check In</span>
+          <span data-i18n="saveAndCheckin">Save &amp; Check In</span>
         </button>
       </div>
       <p id="edit-hint" class="hint" data-i18n="dragHint">Drag to position. Pinch to zoom.</p>
@@ -141,7 +180,7 @@
     <!-- SCREEN: Done -->
     <section id="screen-done" class="screen">
       <div class="done-content">
-        <div class="done-check">&#127987;</div>
+        <div class="done-check">&#x1F3C1;</div>
         <h2 data-i18n="flagCaptured">Flag Captured!</h2>
         <p id="done-location-name" class="done-location"></p>
         <p id="done-progress" class="done-progress"></p>
@@ -184,9 +223,9 @@
     <!-- SCREEN: Completion (all 16 captured!) -->
     <section id="screen-complete" class="screen">
       <div class="done-content">
-        <div class="complete-trophy">&#127942;</div>
+        <div class="complete-trophy">&#x1F3C6;</div>
         <h2>You Captured All 16 Flags!</h2>
-        <p class="done-message">You've explored every neighborhood. Submit your journey for review to claim your prize.</p>
+        <p class="done-message">You've explored every neighborhood. Submit your journey to claim your prize.</p>
       </div>
       <div class="done-actions">
         <button id="btn-complete-submit" class="btn btn-gold btn-full" data-i18n="submitForReview">Submit for Review</button>
