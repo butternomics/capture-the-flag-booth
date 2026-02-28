@@ -1,0 +1,473 @@
+/* ========================================
+   Capture the Flag ATL — App Controller
+   State management, screen transitions,
+   user flow, email capture, progress
+   ======================================== */
+
+import { initCanvas, renderFrame, exportImage, getWindow } from './canvas.js';
+import { initTouch, setMinScale, destroyTouch } from './touch.js';
+import { getLocation, getLocationFromURL, LOCATIONS, TOTAL_LOCATIONS } from './locations.js';
+import { checkin, getCachedVisitor, getCachedProgress, fetchProgress, fetchLeaderboard } from './api.js';
+import { t, toggleLang, getLang } from './i18n.js';
+
+// ---- Format Definitions ----
+const FORMATS = {
+  square:   { width: 1080, height: 1080, label: 'Square (1:1)' },
+  portrait: { width: 1080, height: 1350, label: 'Portrait (4:5)' },
+  story:    { width: 1080, height: 1920, label: 'Story (9:16)' },
+};
+
+// ---- App State ----
+const state = {
+  screen: 'landing',
+  locationSlug: null,
+  location: null,
+  format: null,
+  formatName: null,
+  photo: null,
+  photoX: 0,
+  photoY: 0,
+  photoScale: 1,
+};
+
+// ---- DOM Elements ----
+const app = document.getElementById('app');
+const canvasEl = document.getElementById('preview-canvas');
+const photoInput = document.getElementById('photo-input');
+const uploadOverlay = document.getElementById('upload-overlay');
+const editHint = document.getElementById('edit-hint');
+const iosHint = document.getElementById('ios-hint');
+
+// Buttons
+const btnDownload = document.getElementById('btn-download');
+const btnUpload = document.getElementById('btn-upload');
+const btnBack = document.getElementById('btn-back');
+const btnCapture = document.getElementById('btn-capture');
+const btnAnother = document.getElementById('btn-another');
+const btnProgress = document.getElementById('btn-progress');
+const btnCaptureMore = document.getElementById('btn-capture-more');
+const btnLangToggle = document.getElementById('btn-lang');
+
+// Landing elements
+const landingLocationName = document.getElementById('landing-location-name');
+const landingCountry = document.getElementById('landing-country');
+const landingFlag = document.getElementById('landing-flag');
+const landingTagline = document.getElementById('landing-tagline');
+
+// Email modal
+const emailModal = document.getElementById('email-modal');
+const emailForm = document.getElementById('email-form');
+const inputFirstName = document.getElementById('input-first-name');
+const inputEmail = document.getElementById('input-email');
+const btnSkipEmail = document.getElementById('btn-skip-email');
+
+// Progress screen
+const progressCount = document.getElementById('progress-count');
+const progressTotal = document.getElementById('progress-total');
+const progressBar = document.getElementById('progress-bar');
+const progressList = document.getElementById('progress-list');
+const progressMessage = document.getElementById('progress-message');
+
+// Leaderboard
+const leaderboardList = document.getElementById('leaderboard-list');
+
+// ---- Screen Navigation ----
+function goToScreen(name) {
+  state.screen = name;
+  app.setAttribute('data-screen', name);
+  window.scrollTo(0, 0);
+}
+
+// ---- i18n: Update all translatable elements ----
+function updateStrings() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    el.placeholder = t(key);
+  });
+  if (btnLangToggle) {
+    btnLangToggle.textContent = t('switchLang');
+  }
+}
+
+// ---- Location Initialization ----
+function initLocation() {
+  const slug = getLocationFromURL();
+  if (!slug) {
+    // No location param — show a location picker or default
+    showLocationPicker();
+    return;
+  }
+
+  const loc = getLocation(slug);
+  if (!loc) {
+    showLocationPicker();
+    return;
+  }
+
+  state.locationSlug = slug;
+  state.location = loc;
+
+  // Populate landing screen
+  landingLocationName.textContent = loc.name;
+  landingCountry.textContent = `${t('pairedWith')} ${loc.country}`;
+  landingFlag.textContent = loc.flag;
+  landingTagline.textContent = `"${loc.tagline}"`;
+
+  goToScreen('landing');
+}
+
+function showLocationPicker() {
+  // Build a simple location grid if no ?loc= param
+  const pickerGrid = document.getElementById('location-picker-grid');
+  if (!pickerGrid) return;
+
+  pickerGrid.innerHTML = '';
+  for (const [slug, loc] of Object.entries(LOCATIONS)) {
+    const btn = document.createElement('button');
+    btn.className = 'location-card';
+    btn.innerHTML = `
+      <span class="location-card-flag">${loc.flag}</span>
+      <span class="location-card-name">${loc.name}</span>
+      <span class="location-card-country">${loc.country}</span>
+    `;
+    btn.addEventListener('click', () => {
+      // Update URL without reload
+      const url = new URL(window.location);
+      url.searchParams.set('loc', slug);
+      window.history.pushState({}, '', url);
+      state.locationSlug = slug;
+      state.location = loc;
+
+      landingLocationName.textContent = loc.name;
+      landingCountry.textContent = `${t('pairedWith')} ${loc.country}`;
+      landingFlag.textContent = loc.flag;
+      landingTagline.textContent = `"${loc.tagline}"`;
+
+      goToScreen('landing');
+    });
+    pickerGrid.appendChild(btn);
+  }
+
+  goToScreen('picker');
+}
+
+// ---- Photo Loading ----
+function loadPhoto(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+
+  const img = new Image();
+  const objectUrl = URL.createObjectURL(file);
+
+  img.onload = () => {
+    state.photo = img;
+
+    // Calculate cover scale: photo must fill the frame window
+    const win = getWindow();
+    const coverScale = Math.max(win.w / img.naturalWidth, win.h / img.naturalHeight);
+    state.photoScale = coverScale;
+    setMinScale(coverScale);
+
+    // Center the photo in the window
+    const scaledW = img.naturalWidth * coverScale;
+    const scaledH = img.naturalHeight * coverScale;
+    state.photoX = win.x + (win.w - scaledW) / 2;
+    state.photoY = win.y + (win.h - scaledH) / 2;
+
+    // Update UI
+    uploadOverlay.classList.add('hidden');
+    editHint.classList.add('visible');
+    btnDownload.disabled = false;
+
+    renderFrame(state);
+  };
+
+  img.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+  };
+
+  img.src = objectUrl;
+}
+
+// ---- Reset State ----
+function resetPhotoState() {
+  if (state.photo && state.photo.src) {
+    URL.revokeObjectURL(state.photo.src);
+  }
+  state.photo = null;
+  state.photoX = 0;
+  state.photoY = 0;
+  state.photoScale = 1;
+  btnDownload.disabled = true;
+  btnDownload.textContent = t('downloadPhoto');
+  editHint.classList.remove('visible');
+  uploadOverlay.classList.remove('hidden');
+  photoInput.value = '';
+}
+
+function resetAll() {
+  resetPhotoState();
+  state.format = null;
+  state.formatName = null;
+}
+
+// ---- Email Modal ----
+function showEmailModal() {
+  // Pre-fill from cached visitor
+  const cached = getCachedVisitor();
+  if (cached) {
+    inputFirstName.value = cached.firstName || '';
+    inputEmail.value = cached.email || '';
+  }
+  emailModal.classList.add('visible');
+}
+
+function hideEmailModal() {
+  emailModal.classList.remove('visible');
+}
+
+async function handleEmailSubmit(e) {
+  e.preventDefault();
+  const firstName = inputFirstName.value.trim();
+  const email = inputEmail.value.trim();
+
+  if (!firstName || !email) return;
+
+  hideEmailModal();
+  await doDownloadAndCheckin(email, firstName);
+}
+
+async function handleSkipEmail() {
+  hideEmailModal();
+  await doDownload();
+}
+
+async function doDownloadAndCheckin(email, firstName) {
+  btnDownload.disabled = true;
+  btnDownload.textContent = t('saving');
+
+  try {
+    // Download the image
+    const result = await exportImage(canvasEl, state.locationSlug, state.formatName);
+    if (result.ios) {
+      iosHint.hidden = false;
+    }
+
+    // Register check-in (async, won't block)
+    checkin(email, firstName, state.locationSlug, state.formatName);
+
+    goToScreen('done');
+  } catch {
+    btnDownload.textContent = t('downloadPhoto');
+    btnDownload.disabled = false;
+  }
+}
+
+async function doDownload() {
+  btnDownload.disabled = true;
+  btnDownload.textContent = t('saving');
+
+  try {
+    const result = await exportImage(canvasEl, state.locationSlug, state.formatName);
+    if (result.ios) {
+      iosHint.hidden = false;
+    }
+    goToScreen('done');
+  } catch {
+    btnDownload.textContent = t('downloadPhoto');
+    btnDownload.disabled = false;
+  }
+}
+
+// ---- Progress Screen ----
+async function showProgress() {
+  const visitor = getCachedVisitor();
+  let progress;
+
+  if (visitor?.email) {
+    progress = await fetchProgress(visitor.email);
+  } else {
+    progress = getCachedProgress();
+  }
+
+  const visited = progress.visited || [];
+  const total = TOTAL_LOCATIONS;
+
+  progressCount.textContent = visited.length;
+  progressTotal.textContent = total;
+
+  // Progress bar
+  const pct = Math.round((visited.length / total) * 100);
+  progressBar.style.width = `${pct}%`;
+
+  // Message
+  if (visited.length >= total) {
+    progressMessage.textContent = t('allCaptured');
+  } else {
+    progressMessage.textContent = t('keepExploring');
+  }
+
+  // Location list
+  progressList.innerHTML = '';
+  for (const [slug, loc] of Object.entries(LOCATIONS)) {
+    const li = document.createElement('li');
+    li.className = 'progress-item' + (visited.includes(slug) ? ' captured' : '');
+    li.innerHTML = `
+      <span class="progress-item-flag">${loc.flag}</span>
+      <span class="progress-item-name">${loc.name}</span>
+      <span class="progress-item-status">${visited.includes(slug) ? '\u2713' : ''}</span>
+    `;
+    progressList.appendChild(li);
+  }
+
+  goToScreen('progress');
+}
+
+// ---- Leaderboard ----
+async function showLeaderboard() {
+  const data = await fetchLeaderboard();
+
+  leaderboardList.innerHTML = '';
+  if (data.leaders && data.leaders.length) {
+    data.leaders.forEach((leader, i) => {
+      const li = document.createElement('li');
+      li.className = 'leaderboard-item';
+      li.innerHTML = `
+        <span class="leaderboard-rank">${i + 1}</span>
+        <span class="leaderboard-name">${leader.first_name}</span>
+        <span class="leaderboard-count">${leader.count} ${t('locations')}</span>
+      `;
+      leaderboardList.appendChild(li);
+    });
+  } else {
+    leaderboardList.innerHTML = '<li class="leaderboard-empty">Be the first explorer!</li>';
+  }
+
+  goToScreen('leaderboard');
+}
+
+// ---- Event Handlers ----
+
+// "Capture This Flag" button on landing screen
+btnCapture.addEventListener('click', () => {
+  goToScreen('select');
+});
+
+// Format selection buttons
+document.querySelectorAll('.format-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const formatName = btn.dataset.format;
+    const format = FORMATS[formatName];
+    if (!format) return;
+
+    state.format = format;
+    state.formatName = formatName;
+
+    // Initialize canvas with location-specific frame
+    await initCanvas(canvasEl, formatName, state.locationSlug, state.location, () => renderFrame(state));
+    renderFrame(state);
+
+    // Set up touch handling
+    initTouch(canvasEl, state, () => renderFrame(state), getWindow);
+
+    goToScreen('edit');
+  });
+});
+
+// Photo input
+photoInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) loadPhoto(file);
+});
+
+// Upload overlay click
+uploadOverlay.addEventListener('click', () => {
+  photoInput.click();
+});
+
+// Change photo button
+btnUpload.addEventListener('click', () => {
+  photoInput.click();
+});
+
+// Download button — show email modal first
+btnDownload.addEventListener('click', () => {
+  if (!state.photo) return;
+
+  const cached = getCachedVisitor();
+  if (cached?.email) {
+    // Already have email — skip modal, go straight to download + checkin
+    doDownloadAndCheckin(cached.email, cached.firstName);
+  } else {
+    showEmailModal();
+  }
+});
+
+// Email form submit
+emailForm.addEventListener('submit', handleEmailSubmit);
+
+// Skip email
+btnSkipEmail.addEventListener('click', handleSkipEmail);
+
+// Back button (edit → select)
+btnBack.addEventListener('click', () => {
+  destroyTouch();
+  resetAll();
+  goToScreen('select');
+});
+
+// "Capture Another Flag" button
+btnAnother.addEventListener('click', () => {
+  iosHint.hidden = true;
+  destroyTouch();
+  resetAll();
+  // Go back to landing for the same location, or picker
+  if (state.location) {
+    goToScreen('landing');
+  } else {
+    goToScreen('picker');
+  }
+});
+
+// View progress button
+btnProgress.addEventListener('click', showProgress);
+
+// Capture more flags button (from progress screen)
+btnCaptureMore.addEventListener('click', () => {
+  if (state.location) {
+    goToScreen('landing');
+  } else {
+    goToScreen('picker');
+  }
+});
+
+// Leaderboard button
+document.getElementById('btn-leaderboard')?.addEventListener('click', showLeaderboard);
+
+// Back from leaderboard
+document.getElementById('btn-leaderboard-back')?.addEventListener('click', () => {
+  goToScreen('progress');
+});
+
+// Language toggle
+if (btnLangToggle) {
+  btnLangToggle.addEventListener('click', () => {
+    toggleLang();
+    updateStrings();
+    // Re-populate location info if on landing
+    if (state.location && state.screen === 'landing') {
+      landingCountry.textContent = `${t('pairedWith')} ${state.location.country}`;
+    }
+  });
+}
+
+// Prevent default drag behavior
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => e.preventDefault());
+
+// ---- Init ----
+updateStrings();
+initLocation();

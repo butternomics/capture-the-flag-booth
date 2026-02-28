@@ -1,0 +1,9 @@
+{
+  "name": "capture-the-flag-booth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Capture the Flag ATL — Virtual Booth for Showcase Atlanta / FIFA World Cup 2026",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
