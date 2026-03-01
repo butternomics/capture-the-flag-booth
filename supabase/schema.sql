@@ -74,3 +74,64 @@ CREATE POLICY "Public read access"
 CREATE POLICY "Service role upload"
   ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'checkin-photos');
+
+-- Venue Offers: optional partner offers shown after check-in at a location
+CREATE TABLE venue_offers (
+  id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  location_id TEXT NOT NULL UNIQUE,
+  offer_text  TEXT NOT NULL,
+  offer_code  TEXT,
+  active      BOOLEAN DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  updated_at  TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_venue_offers_location ON venue_offers(location_id);
+
+ALTER TABLE venue_offers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Service role full access on venue_offers"
+  ON venue_offers FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+-- ========================================
+-- Knockout Round Support
+-- ========================================
+
+-- Game Config: single-row phase tracker
+CREATE TABLE game_config (
+  id         INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  phase      TEXT NOT NULL DEFAULT 'group_stage'
+             CHECK (phase IN ('group_stage','knockout_r32','knockout_r16','semifinal')),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  updated_by TEXT DEFAULT 'system'
+);
+INSERT INTO game_config (id, phase) VALUES (1, 'group_stage');
+ALTER TABLE game_config ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service role full access on game_config"
+  ON game_config FOR ALL USING (true) WITH CHECK (true);
+
+-- Location Overrides: per-location, per-phase re-pairings
+CREATE TABLE location_overrides (
+  id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  location_id TEXT NOT NULL,
+  phase       TEXT NOT NULL CHECK (phase IN ('knockout_r32','knockout_r16','semifinal')),
+  country     TEXT NOT NULL,
+  flag        TEXT NOT NULL,
+  tagline     TEXT,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  updated_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (location_id, phase)
+);
+CREATE INDEX idx_overrides_phase ON location_overrides(phase);
+ALTER TABLE location_overrides ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service role full access on location_overrides"
+  ON location_overrides FOR ALL USING (true) WITH CHECK (true);
+
+-- Alter checkins: add phase column, update unique constraint
+ALTER TABLE checkins ADD COLUMN phase TEXT NOT NULL DEFAULT 'group_stage';
+ALTER TABLE checkins DROP CONSTRAINT checkins_visitor_id_location_id_key;
+ALTER TABLE checkins ADD CONSTRAINT checkins_visitor_location_phase_key
+  UNIQUE (visitor_id, location_id, phase);
+CREATE INDEX idx_checkins_phase ON checkins(phase);

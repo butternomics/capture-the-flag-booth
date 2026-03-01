@@ -16,6 +16,11 @@
 <body>
   <div id="app" data-screen="home">
 
+    <!-- PHASE BANNER — shown during knockout rounds -->
+    <div id="phase-banner" class="phase-banner" style="display:none">
+      <span id="phase-banner-text"></span>
+    </div>
+
     <!-- SCREEN: Home -->
     <section id="screen-home" class="screen">
       <div class="home-hero">
@@ -83,6 +88,7 @@
       </header>
 
       <div class="landing-card">
+        <div id="landing-knockout-badge" class="knockout-badge" style="display:none" data-i18n="knockoutFlag">KNOCKOUT FLAG</div>
         <div id="landing-flag" class="landing-flag"></div>
         <h2 id="landing-location-name" class="landing-name"></h2>
         <p id="landing-country" class="landing-country"></p>
@@ -181,11 +187,18 @@
     <section id="screen-done" class="screen">
       <div class="done-content">
         <div class="done-check">&#x1F3C1;</div>
-        <h2 data-i18n="flagCaptured">Flag Captured!</h2>
+        <h2 id="done-title" data-i18n="flagCaptured">Flag Captured!</h2>
+        <div id="done-knockout-badge" class="knockout-done-badge" style="display:none" data-i18n="knockoutFlag">KNOCKOUT FLAG</div>
         <p id="done-location-name" class="done-location"></p>
         <p id="done-progress" class="done-progress"></p>
         <p class="done-message"><span data-i18n="shareMessage">Share it with</span> <strong>#CaptureTheFlagATL</strong></p>
       </div>
+      <div id="done-offer" class="done-offer" style="display:none">
+        <div class="done-offer-label">Special Offer</div>
+        <div class="done-offer-text" id="done-offer-text"></div>
+        <div class="done-offer-code" id="done-offer-code"></div>
+      </div>
+
       <div class="done-actions">
         <button id="btn-another" class="btn btn-primary btn-full" data-i18n="captureAnother">Capture Another Flag</button>
         <button id="btn-progress" class="btn btn-secondary btn-full" data-i18n="viewProgress">View My Progress</button>
@@ -209,6 +222,14 @@
           <div id="progress-bar" class="progress-bar-fill" style="width: 0%"></div>
         </div>
         <p id="progress-message" class="progress-msg"></p>
+      </div>
+
+      <div id="knockout-progress" class="knockout-progress" style="display:none">
+        <div class="knockout-progress-header">KNOCKOUT FLAGS</div>
+        <div class="knockout-progress-count">
+          <span id="knockout-count" class="knockout-big">0</span>
+          <span class="knockout-label" data-i18n="knockoutFlags">knockout flags</span>
+        </div>
       </div>
 
       <ul id="progress-list" class="progress-list"></ul>

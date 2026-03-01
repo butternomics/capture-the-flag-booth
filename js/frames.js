@@ -34,7 +34,7 @@ const frameCache = {};
  * Returns a canvas element with transparent photo window.
  */
 export function generateFrame(locationConfig, formatName) {
-  const cacheKey = `${locationConfig.name}-${formatName}`;
+  const cacheKey = `${locationConfig.name}-${locationConfig.country}-${formatName}`;
   if (frameCache[cacheKey]) return frameCache[cacheKey];
 
   const fmt = FORMATS[formatName];

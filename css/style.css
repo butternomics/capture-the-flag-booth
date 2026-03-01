@@ -907,6 +907,46 @@ body {
   line-height: 1.5;
 }
 
+.done-offer {
+  width: 100%;
+  max-width: 320px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius);
+  text-align: center;
+  animation: scaleIn 0.35s ease;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.12);
+}
+
+.done-offer-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.done-offer-text {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.done-offer-code {
+  font-family: 'Courier New', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 3px;
+  padding: 8px 16px;
+  background: var(--pitch-700);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
 .done-actions {
   width: 100%;
   max-width: 300px;
@@ -1135,4 +1175,115 @@ body {
   color: var(--gold);
   margin-top: 16px;
   letter-spacing: 0.5px;
+}
+
+/* ========================================
+   KNOCKOUT ROUND STYLES
+   ======================================== */
+
+/* Phase banner — sticky top bar during knockout rounds */
+.phase-banner {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--pitch-900) 0%, var(--pitch-700) 100%);
+  border-bottom: 2px solid var(--gold);
+  text-align: center;
+  z-index: 50;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  box-shadow: 0 2px 12px rgba(212, 175, 55, 0.15);
+}
+
+/* Knockout badge — pill on landing card */
+.knockout-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+  color: var(--pitch-800);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+  border-radius: 100px;
+  margin-bottom: 12px;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Knockout badge — done screen */
+.knockout-done-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+  color: var(--pitch-800);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  border-radius: 100px;
+  margin-bottom: 8px;
+}
+
+/* Knockout location card in picker — gold border + glow */
+.location-card-knockout {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Small "KO" pill badge on top-left of re-paired picker cards */
+.location-card-knockout-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px;
+  background: var(--gold);
+  color: var(--pitch-800);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+/* Knockout progress card on progress screen */
+.knockout-progress {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.1);
+}
+
+.knockout-progress-header {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.knockout-progress-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.knockout-big {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.knockout-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }

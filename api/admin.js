@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // GET: full dashboard data — all visitors, check-ins, leaderboard, activity
+  // GET: full dashboard data — all visitors, check-ins, leaderboard, activity, knockout config
   if (req.method === 'GET') {
     try {
       // All visitors
@@ -33,13 +33,31 @@ export default async function handler(req, res) {
       // All check-ins with photos
       const { data: checkins } = await supabase
         .from('checkins')
-        .select('id, visitor_id, location_id, format, photo_url, created_at')
+        .select('id, visitor_id, location_id, format, photo_url, phase, created_at')
         .order('created_at', { ascending: false });
 
       // All submissions
       const { data: submissions } = await supabase
         .from('submissions')
         .select('id, visitor_id, status, reviewed_by, reviewed_at, created_at')
+        .order('created_at', { ascending: false });
+
+      // Venue offers
+      const { data: venueOffers } = await supabase
+        .from('venue_offers')
+        .select('id, location_id, offer_text, offer_code, active, created_at, updated_at');
+
+      // Game config
+      const { data: gameConfig } = await supabase
+        .from('game_config')
+        .select('phase, updated_at, updated_by')
+        .eq('id', 1)
+        .single();
+
+      // Location overrides
+      const { data: locationOverrides } = await supabase
+        .from('location_overrides')
+        .select('id, location_id, phase, country, flag, tagline, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       // Build leaderboard: visitors ranked by unique locations
@@ -62,7 +80,7 @@ export default async function handler(req, res) {
       const leaderboard = Object.entries(visitorCheckins)
         .map(([visitorId, cks]) => {
           const v = visitorMap[visitorId];
-          const uniqueLocs = [...new Set(cks.map(c => c.location_id))];
+          const uniqueLocs = [...new Set(cks.filter(c => c.phase === 'group_stage').map(c => c.location_id))];
           return {
             visitorId: Number(visitorId),
             firstName: v?.first_name || 'Unknown',
@@ -95,6 +113,14 @@ export default async function handler(req, res) {
       const completers = leaderboard.filter(l => l.locationsCount >= 16).length;
       const pendingSubmissions = (submissions || []).filter(s => s.status === 'pending').length;
 
+      // Knockout stats: check-in counts by phase
+      const knockoutStats = {};
+      for (const c of (checkins || [])) {
+        if (c.phase !== 'group_stage') {
+          knockoutStats[c.phase] = (knockoutStats[c.phase] || 0) + 1;
+        }
+      }
+
       return res.status(200).json({
         stats: {
           totalVisitors,
@@ -106,6 +132,10 @@ export default async function handler(req, res) {
         locationCounts,
         recentActivity,
         submissions: submissions || [],
+        venueOffers: venueOffers || [],
+        gameConfig: gameConfig || { phase: 'group_stage' },
+        locationOverrides: locationOverrides || [],
+        knockoutStats,
       });
     } catch {
       return res.status(500).json({ error: 'Internal server error' });
@@ -141,6 +171,148 @@ export default async function handler(req, res) {
       }
 
       return res.status(200).json({ success: true, submission: data });
+    } catch {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // PUT: save-offer, advance-phase, or save-override
+  if (req.method === 'PUT') {
+    const { action } = req.body;
+
+    if (action === 'save-offer') {
+      const { locationId, offerText, offerCode, active } = req.body;
+      if (!locationId || !offerText) {
+        return res.status(400).json({ error: 'Missing locationId or offerText' });
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('venue_offers')
+          .upsert(
+            {
+              location_id: locationId,
+              offer_text: offerText,
+              offer_code: offerCode || null,
+              active: active !== false,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'location_id' }
+          )
+          .select()
+          .single();
+
+        if (error) {
+          return res.status(500).json({ error: 'Failed to save offer' });
+        }
+
+        return res.status(200).json({ success: true, offer: data });
+      } catch {
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+
+    if (action === 'advance-phase') {
+      const { phase } = req.body;
+      const validPhases = ['group_stage', 'knockout_r32', 'knockout_r16', 'semifinal'];
+
+      if (!phase || !validPhases.includes(phase)) {
+        return res.status(400).json({ error: 'Invalid phase. Must be one of: ' + validPhases.join(', ') });
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('game_config')
+          .update({
+            phase,
+            updated_at: new Date().toISOString(),
+            updated_by: 'admin',
+          })
+          .eq('id', 1)
+          .select()
+          .single();
+
+        if (error) {
+          return res.status(500).json({ error: 'Failed to update phase' });
+        }
+
+        return res.status(200).json({ success: true, gameConfig: data });
+      } catch {
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+
+    if (action === 'save-override') {
+      const { locationId, phase, country, flag, tagline } = req.body;
+
+      if (!locationId || !phase || !country || !flag) {
+        return res.status(400).json({ error: 'Missing required fields: locationId, phase, country, flag' });
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('location_overrides')
+          .upsert(
+            {
+              location_id: locationId,
+              phase,
+              country,
+              flag,
+              tagline: tagline || null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'location_id,phase' }
+          )
+          .select()
+          .single();
+
+        if (error) {
+          return res.status(500).json({ error: 'Failed to save override' });
+        }
+
+        return res.status(200).json({ success: true, override: data });
+      } catch {
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+
+    return res.status(400).json({ error: 'Unknown action' });
+  }
+
+  // DELETE: remove venue offer or location override
+  if (req.method === 'DELETE') {
+    const { action, locationId, phase } = req.body;
+
+    if (action === 'delete-override') {
+      if (!locationId || !phase) {
+        return res.status(400).json({ error: 'Missing locationId or phase' });
+      }
+
+      try {
+        await supabase
+          .from('location_overrides')
+          .delete()
+          .eq('location_id', locationId)
+          .eq('phase', phase);
+
+        return res.status(200).json({ success: true });
+      } catch {
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+
+    // Default: delete venue offer (backward compatible)
+    if (!locationId) {
+      return res.status(400).json({ error: 'Missing locationId' });
+    }
+
+    try {
+      await supabase
+        .from('venue_offers')
+        .delete()
+        .eq('location_id', locationId);
+
+      return res.status(200).json({ success: true });
     } catch {
       return res.status(500).json({ error: 'Internal server error' });
     }

@@ -167,6 +167,99 @@
     .loc-stat-sub { font-size: 11px; color: var(--dim); }
 
     .empty { text-align: center; padding: 48px 20px; color: var(--dim); font-size: 15px; }
+
+    /* ---- Venue Offers in Location Cards ---- */
+    .loc-stat-card { flex-direction: column; align-items: stretch; position: relative; }
+    .loc-stat-header { display: flex; align-items: center; gap: 12px; }
+    .loc-offer-badge {
+      position: absolute; top: 10px; right: 10px; width: 10px; height: 10px;
+      border-radius: 50%; background: var(--gold); box-shadow: 0 0 6px rgba(201,169,78,0.5);
+    }
+    .loc-offer-form { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .loc-offer-form input, .loc-offer-form select {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--dim); border-radius: 6px;
+      background: var(--bg); color: var(--text); font-size: 13px; outline: none;
+    }
+    .loc-offer-form input:focus { border-color: var(--gold); }
+    .loc-offer-form input::placeholder { color: #666; }
+    .loc-offer-actions { display: flex; gap: 6px; margin-top: 4px; }
+    .loc-offer-actions button {
+      flex: 1; padding: 6px 10px; border: none; border-radius: 5px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .offer-save-btn { background: var(--gold); color: var(--bg); }
+    .offer-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .offer-delete-btn { background: transparent; border: 1px solid var(--red) !important; color: var(--red); }
+    .offer-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); }
+    .offer-toggle input[type="checkbox"] { accent-color: var(--gold); }
+
+    /* ---- Phase Control ---- */
+    .phase-control {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 24px;
+      padding: 16px; background: var(--card); border-radius: 10px;
+      border: 1px solid rgba(201,169,78,0.2); flex-wrap: wrap;
+    }
+    .phase-control-label {
+      font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px;
+      margin-right: 8px; font-weight: 700;
+    }
+    .phase-btn {
+      padding: 8px 16px; border: 1px solid var(--dim); border-radius: 6px;
+      background: transparent; color: var(--text); cursor: pointer; font-size: 13px;
+      font-weight: 600; transition: all 0.2s;
+    }
+    .phase-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .phase-btn.active {
+      background: var(--gold); color: var(--bg); border-color: var(--gold);
+    }
+    .phase-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ---- Knockout Tab ---- */
+    .ko-section { margin-bottom: 24px; }
+    .ko-section h3 {
+      font-size: 14px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 12px; border-bottom: 1px solid var(--green); padding-bottom: 8px;
+    }
+    .ko-stats { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .ko-stat {
+      background: var(--card); padding: 12px 16px; border-radius: 8px; text-align: center; min-width: 100px;
+    }
+    .ko-stat-num { font-size: 28px; font-weight: 800; color: var(--gold); }
+    .ko-stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+    .ko-overrides { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .ko-override-card {
+      background: var(--card); border-radius: 8px; padding: 14px; border-left: 3px solid var(--gold);
+      position: relative;
+    }
+    .ko-override-loc { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .ko-override-arrow { color: var(--dim); font-size: 13px; }
+    .ko-override-country { color: var(--gold); font-weight: 600; }
+    .ko-override-remove {
+      position: absolute; top: 10px; right: 10px; background: none; border: 1px solid var(--red);
+      color: var(--red); border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer;
+    }
+    .ko-override-remove:hover { background: var(--red); color: var(--text); }
+
+    .ko-form {
+      display: grid; grid-template-columns: 1fr 1fr 80px 1fr auto; gap: 8px; align-items: end;
+      background: var(--card); padding: 14px; border-radius: 8px;
+    }
+    .ko-form label { font-size: 11px; color: var(--dim); display: block; margin-bottom: 3px; }
+    .ko-form select, .ko-form input {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--dim); border-radius: 6px;
+      background: var(--bg); color: var(--text); font-size: 13px; outline: none;
+    }
+    .ko-form select:focus, .ko-form input:focus { border-color: var(--gold); }
+    .ko-form-btn {
+      padding: 8px 16px; background: var(--gold); color: var(--bg); border: none;
+      border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .ko-form-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    @media (max-width: 700px) {
+      .ko-form { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -194,11 +287,15 @@
         <div class="stat-card"><div class="stat-num" id="s-pending">0</div><div class="stat-label">Pending Review</div></div>
       </div>
 
+      <!-- Phase Control -->
+      <div id="phase-control" class="phase-control"></div>
+
       <!-- Tabs -->
       <div class="tabs">
         <button class="tab active" onclick="switchTab('leaderboard', this)">Leaderboard</button>
         <button class="tab" onclick="switchTab('activity', this)">Recent Activity</button>
         <button class="tab" onclick="switchTab('locations', this)">Locations</button>
+        <button class="tab" onclick="switchTab('knockout', this)">Knockout</button>
       </div>
 
       <!-- Leaderboard -->
@@ -227,6 +324,11 @@
       <!-- Locations -->
       <div id="tab-locations" class="tab-panel">
         <div id="location-stats" class="loc-stats"></div>
+      </div>
+
+      <!-- Knockout -->
+      <div id="tab-knockout" class="tab-panel">
+        <div id="knockout-content"></div>
       </div>
     </div>
   </div>
@@ -295,6 +397,8 @@ function renderAll() {
   renderLeaderboard();
   renderActivity();
   renderLocations();
+  renderPhaseControl();
+  renderKnockout();
 }
 
 function renderStats() {
@@ -411,18 +515,40 @@ function renderActivity() {
 function renderLocations() {
   const container = document.getElementById('location-stats');
   const counts = dashData.locationCounts || {};
+  const offers = dashData.venueOffers || [];
+
+  // Build offer lookup by location_id
+  const offerMap = {};
+  for (const o of offers) { offerMap[o.location_id] = o; }
 
   const sorted = Object.entries(LOCATIONS)
     .map(([slug, loc]) => ({ slug, ...loc, count: counts[slug] || 0 }))
     .sort((a, b) => b.count - a.count);
 
-  container.innerHTML = sorted.map(l =>
-    '<div class="loc-stat-card">' +
-      '<div class="loc-stat-count">' + l.count + '</div>' +
-      '<div><div class="loc-stat-name">' + l.flag + ' ' + esc(l.name) + '</div>' +
-      '<div class="loc-stat-sub">check-ins</div></div>' +
-    '</div>'
-  ).join('');
+  container.innerHTML = sorted.map(l => {
+    const offer = offerMap[l.slug];
+    const hasActiveOffer = offer && offer.active;
+    return '<div class="loc-stat-card">' +
+      (hasActiveOffer ? '<div class="loc-offer-badge" title="Active offer"></div>' : '') +
+      '<div class="loc-stat-header">' +
+        '<div class="loc-stat-count">' + l.count + '</div>' +
+        '<div><div class="loc-stat-name">' + l.flag + ' ' + esc(l.name) + '</div>' +
+        '<div class="loc-stat-sub">check-ins</div></div>' +
+      '</div>' +
+      '<div class="loc-offer-form">' +
+        '<input type="text" id="offer-text-' + l.slug + '" placeholder="Offer text (e.g. 10% off)" value="' + esc(offer?.offer_text || '') + '">' +
+        '<input type="text" id="offer-code-' + l.slug + '" placeholder="Code (optional)" value="' + esc(offer?.offer_code || '') + '">' +
+        '<label class="offer-toggle">' +
+          '<input type="checkbox" id="offer-active-' + l.slug + '"' + (hasActiveOffer || !offer ? ' checked' : '') + '>' +
+          'Active' +
+        '</label>' +
+        '<div class="loc-offer-actions">' +
+          '<button class="offer-save-btn" onclick="saveOffer(\'' + l.slug + '\', this)">Save Offer</button>' +
+          (offer ? '<button class="offer-delete-btn" onclick="deleteOffer(\'' + l.slug + '\', this)">Remove</button>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 async function reviewSubmission(subId, status, btn) {
@@ -437,6 +563,196 @@ async function reviewSubmission(subId, status, btn) {
     if (res.ok) { loadData(); }
     else { alert('Failed'); btn.disabled = false; btn.textContent = status === 'approved' ? 'Approve Winner' : 'Reject'; }
   } catch { alert('Network error'); btn.disabled = false; }
+}
+
+async function saveOffer(slug, btn) {
+  const offerText = document.getElementById('offer-text-' + slug).value.trim();
+  const offerCode = document.getElementById('offer-code-' + slug).value.trim();
+  const active = document.getElementById('offer-active-' + slug).checked;
+
+  if (!offerText) { alert('Enter offer text first'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ action: 'save-offer', locationId: slug, offerText, offerCode: offerCode || null, active }),
+    });
+    if (res.ok) { loadData(); }
+    else { alert('Failed to save offer'); btn.disabled = false; btn.textContent = 'Save Offer'; }
+  } catch { alert('Network error'); btn.disabled = false; btn.textContent = 'Save Offer'; }
+}
+
+async function deleteOffer(slug, btn) {
+  if (!confirm('Remove offer for this location?')) return;
+  btn.disabled = true;
+  btn.textContent = 'Removing...';
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ locationId: slug }),
+    });
+    if (res.ok) { loadData(); }
+    else { alert('Failed to remove offer'); btn.disabled = false; btn.textContent = 'Remove'; }
+  } catch { alert('Network error'); btn.disabled = false; btn.textContent = 'Remove'; }
+}
+
+// ---- Phase Control ----
+const PHASES = [
+  { id: 'group_stage', label: 'Group Stage' },
+  { id: 'knockout_r32', label: 'Round of 32' },
+  { id: 'knockout_r16', label: 'Round of 16' },
+  { id: 'semifinal', label: 'Semifinal' },
+];
+
+function renderPhaseControl() {
+  const container = document.getElementById('phase-control');
+  const currentPhase = dashData.gameConfig?.phase || 'group_stage';
+
+  container.innerHTML = '<span class="phase-control-label">Game Phase:</span>' +
+    PHASES.map(p => {
+      const isActive = p.id === currentPhase;
+      return '<button class="phase-btn' + (isActive ? ' active' : '') + '" ' +
+        'onclick="setPhase(\'' + p.id + '\')"' +
+        (isActive ? ' disabled' : '') + '>' +
+        p.label + '</button>';
+    }).join('');
+}
+
+async function setPhase(phase) {
+  const currentPhase = dashData.gameConfig?.phase || 'group_stage';
+  const label = PHASES.find(p => p.id === phase)?.label || phase;
+
+  if (!confirm('Change game phase to "' + label + '"?\n\nCurrent phase: ' +
+    (PHASES.find(p => p.id === currentPhase)?.label || currentPhase) +
+    '\n\nThis will change what visitors see on the frontend.')) {
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ action: 'advance-phase', phase }),
+    });
+    if (res.ok) { loadData(); }
+    else { alert('Failed to update phase'); }
+  } catch { alert('Network error'); }
+}
+
+// ---- Knockout Tab ----
+function renderKnockout() {
+  const container = document.getElementById('knockout-content');
+  const currentPhase = dashData.gameConfig?.phase || 'group_stage';
+  const overrides = dashData.locationOverrides || [];
+  const koStats = dashData.knockoutStats || {};
+
+  let html = '';
+
+  // Knockout stats
+  html += '<div class="ko-section"><h3>Knockout Check-in Stats</h3><div class="ko-stats">';
+  for (const p of PHASES.slice(1)) {
+    html += '<div class="ko-stat">' +
+      '<div class="ko-stat-num">' + (koStats[p.id] || 0) + '</div>' +
+      '<div class="ko-stat-label">' + p.label + '</div></div>';
+  }
+  html += '</div></div>';
+
+  // Active overrides for current phase
+  const phaseOverrides = overrides.filter(o => o.phase === currentPhase);
+  html += '<div class="ko-section"><h3>Active Overrides (' +
+    (PHASES.find(p => p.id === currentPhase)?.label || currentPhase) + ')</h3>';
+
+  if (phaseOverrides.length) {
+    html += '<div class="ko-overrides">';
+    for (const o of phaseOverrides) {
+      const loc = LOCATIONS[o.location_id] || { name: o.location_id, flag: '' };
+      html += '<div class="ko-override-card">' +
+        '<button class="ko-override-remove" onclick="deleteOverride(\'' + esc(o.location_id) + '\', \'' + esc(o.phase) + '\', this)">Remove</button>' +
+        '<div class="ko-override-loc">' + loc.flag + ' ' + esc(loc.name) + '</div>' +
+        '<div class="ko-override-arrow">' + esc(loc.name) + ' &rarr; ' +
+        '<span class="ko-override-country">' + esc(o.flag) + ' ' + esc(o.country) + '</span></div>' +
+        (o.tagline ? '<div style="font-size:12px;color:var(--dim);margin-top:4px;">"' + esc(o.tagline) + '"</div>' : '') +
+        '</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<p style="color:var(--dim);font-size:14px;margin-bottom:16px;">No overrides set for this phase.</p>';
+  }
+  html += '</div>';
+
+  // All overrides (all phases)
+  const otherOverrides = overrides.filter(o => o.phase !== currentPhase);
+  if (otherOverrides.length) {
+    html += '<div class="ko-section"><h3>Other Phase Overrides</h3><div class="ko-overrides">';
+    for (const o of otherOverrides) {
+      const loc = LOCATIONS[o.location_id] || { name: o.location_id, flag: '' };
+      const pLabel = PHASES.find(p => p.id === o.phase)?.label || o.phase;
+      html += '<div class="ko-override-card" style="opacity:0.6">' +
+        '<button class="ko-override-remove" onclick="deleteOverride(\'' + esc(o.location_id) + '\', \'' + esc(o.phase) + '\', this)">Remove</button>' +
+        '<div class="ko-override-loc">' + loc.flag + ' ' + esc(loc.name) + ' <span style="font-size:10px;color:var(--dim);">(' + pLabel + ')</span></div>' +
+        '<div class="ko-override-arrow">&rarr; <span class="ko-override-country">' + esc(o.flag) + ' ' + esc(o.country) + '</span></div>' +
+        '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  // Add override form
+  html += '<div class="ko-section"><h3>Add / Edit Override</h3>' +
+    '<div class="ko-form">' +
+      '<div><label>Location</label><select id="ko-loc">' +
+        Object.entries(LOCATIONS).map(([slug, loc]) =>
+          '<option value="' + slug + '">' + loc.flag + ' ' + esc(loc.name) + '</option>'
+        ).join('') +
+      '</select></div>' +
+      '<div><label>Country</label><input type="text" id="ko-country" placeholder="e.g. Argentina"></div>' +
+      '<div><label>Flag</label><input type="text" id="ko-flag" placeholder="🇦🇷"></div>' +
+      '<div><label>Tagline</label><input type="text" id="ko-tagline" placeholder="Optional tagline"></div>' +
+      '<div><label>&nbsp;</label><button class="ko-form-btn" onclick="saveOverride(this)">Save</button></div>' +
+    '</div></div>';
+
+  container.innerHTML = html;
+}
+
+async function saveOverride(btn) {
+  const locationId = document.getElementById('ko-loc').value;
+  const country = document.getElementById('ko-country').value.trim();
+  const flag = document.getElementById('ko-flag').value.trim();
+  const tagline = document.getElementById('ko-tagline').value.trim();
+  const phase = dashData.gameConfig?.phase || 'group_stage';
+
+  if (!country || !flag) { alert('Country and flag emoji are required'); return; }
+  if (phase === 'group_stage') { alert('Cannot add overrides during group stage. Advance the phase first.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ action: 'save-override', locationId, phase, country, flag, tagline: tagline || null }),
+    });
+    if (res.ok) { loadData(); }
+    else { alert('Failed to save override'); btn.disabled = false; btn.textContent = 'Save'; }
+  } catch { alert('Network error'); btn.disabled = false; btn.textContent = 'Save'; }
+}
+
+async function deleteOverride(locationId, phase, btn) {
+  if (!confirm('Remove this override?')) return;
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ action: 'delete-override', locationId, phase }),
+    });
+    if (res.ok) { loadData(); }
+    else { alert('Failed to remove override'); btn.disabled = false; btn.textContent = 'Remove'; }
+  } catch { alert('Network error'); btn.disabled = false; btn.textContent = 'Remove'; }
 }
 
 function esc(str) {

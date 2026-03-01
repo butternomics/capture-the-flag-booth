@@ -131,3 +131,35 @@ export function getLocationFromURL() {
 
 /** Total number of locations */
 export const TOTAL_LOCATIONS = Object.keys(LOCATIONS).length;
+
+/**
+ * Get effective location config with knockout overrides merged.
+ * Returns a copy with country, flag, tagline replaced if overridden.
+ * Adds _knockout: true marker and _originalCountry for UI display.
+ */
+export function getEffectiveLocation(slug, overrides) {
+  const base = LOCATIONS[slug];
+  if (!base) return null;
+
+  if (!overrides || !overrides.length) return base;
+
+  const override = overrides.find(o => o.location_id === slug);
+  if (!override) return base;
+
+  return {
+    ...base,
+    country: override.country,
+    flag: override.flag,
+    tagline: override.tagline || base.tagline,
+    _knockout: true,
+    _originalCountry: base.country,
+  };
+}
+
+/**
+ * Check if a location has a knockout override in the current phase.
+ */
+export function isKnockoutLocation(slug, overrides) {
+  if (!overrides || !overrides.length) return false;
+  return overrides.some(o => o.location_id === slug);
+}

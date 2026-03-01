@@ -8,6 +8,8 @@ const API_BASE = '/api';
 const STORAGE_KEY_VISITOR = 'ctf_visitor';
 const STORAGE_KEY_PROGRESS = 'ctf_progress';
 const STORAGE_KEY_QUEUE = 'ctf_retry_queue';
+const STORAGE_KEY_CONFIG = 'ctf_config';
+const STORAGE_KEY_KNOCKOUT = 'ctf_knockout_progress';
 
 // ---- LocalStorage helpers ----
 
@@ -88,13 +90,19 @@ export function cacheVisitor(email, firstName) {
  * @param {string} firstName
  * @param {string} locationId - location slug
  * @param {string} format - portrait/story/square
+ * @param {string} [phase] - game phase (default: 'group_stage')
  * @returns {Promise<{success: boolean, queued?: boolean}>}
  */
-export async function checkin(email, firstName, locationId, format) {
-  const payload = { email, firstName, locationId, format };
+export async function checkin(email, firstName, locationId, format, phase) {
+  const checkinPhase = phase || 'group_stage';
+  const payload = { email, firstName, locationId, format, phase: checkinPhase };
 
   // Optimistically update local progress
-  updateLocalProgress(locationId);
+  if (checkinPhase === 'group_stage') {
+    updateLocalProgress(locationId);
+  } else {
+    updateKnockoutProgress(locationId, checkinPhase);
+  }
   cacheVisitor(email, firstName);
 
   try {
@@ -105,17 +113,18 @@ export async function checkin(email, firstName, locationId, format) {
     });
 
     if (res.ok || res.status === 409) {
-      // 409 = already checked in at this location — still a success
-      return { success: true };
+      // 409 = already checked in at this location/phase — still a success
+      const data = await res.json().catch(() => ({}));
+      return { success: true, offer: data.offer || null };
     }
 
     // Server error — queue for retry
     addToQueue(payload);
-    return { success: true, queued: true };
+    return { success: true, queued: true, offer: null };
   } catch {
     // Network error — queue for retry
     addToQueue(payload);
-    return { success: true, queued: true };
+    return { success: true, queued: true, offer: null };
   }
 }
 
@@ -137,7 +146,7 @@ export function getCachedProgress() {
 /**
  * Fetch progress from server and merge with local cache
  * @param {string} email
- * @returns {Promise<{visited: string[], total: number}>}
+ * @returns {Promise<{visited: string[], total: number, knockoutCaptures: Array}>}
  */
 export async function fetchProgress(email) {
   try {
@@ -149,12 +158,25 @@ export async function fetchProgress(email) {
       const merged = [...new Set([...data.visited, ...local.visited])];
       const progress = { visited: merged, total: data.total };
       setStored(STORAGE_KEY_PROGRESS, progress);
-      return progress;
+
+      // Merge knockout captures from server
+      if (data.knockoutCaptures && data.knockoutCaptures.length) {
+        const localKO = getCachedKnockoutProgress();
+        for (const kc of data.knockoutCaptures) {
+          const exists = localKO.some(
+            l => l.location_id === kc.location_id && l.phase === kc.phase
+          );
+          if (!exists) localKO.push(kc);
+        }
+        setStored(STORAGE_KEY_KNOCKOUT, localKO);
+      }
+
+      return { ...progress, knockoutCaptures: getCachedKnockoutProgress() };
     }
   } catch {
     // Offline — return local cache
   }
-  return getCachedProgress();
+  return { ...getCachedProgress(), knockoutCaptures: getCachedKnockoutProgress() };
 }
 
 // ---- Photo Upload ----
@@ -225,6 +247,47 @@ export async function fetchLeaderboard() {
     // Offline
   }
   return { leaders: [], locationStats: [] };
+}
+
+// ---- Game Config ----
+
+/**
+ * Fetch current game config (phase + overrides) from server
+ * @returns {Promise<{phase: string, overrides: Array}>}
+ */
+export async function fetchConfig() {
+  try {
+    const res = await fetch(`${API_BASE}/config`);
+    if (res.ok) {
+      const data = await res.json();
+      setStored(STORAGE_KEY_CONFIG, data);
+      return data;
+    }
+  } catch {
+    // Offline — return cached
+  }
+  return getCachedConfig();
+}
+
+/** Get cached config (works offline) */
+export function getCachedConfig() {
+  return getStored(STORAGE_KEY_CONFIG) || { phase: 'group_stage', overrides: [] };
+}
+
+// ---- Knockout Progress ----
+
+function updateKnockoutProgress(locationId, phase) {
+  const ko = getStored(STORAGE_KEY_KNOCKOUT) || [];
+  const exists = ko.some(k => k.location_id === locationId && k.phase === phase);
+  if (!exists) {
+    ko.push({ location_id: locationId, phase });
+    setStored(STORAGE_KEY_KNOCKOUT, ko);
+  }
+}
+
+/** Get cached knockout captures */
+export function getCachedKnockoutProgress() {
+  return getStored(STORAGE_KEY_KNOCKOUT) || [];
 }
 
 // ---- Auto-flush on page load ----

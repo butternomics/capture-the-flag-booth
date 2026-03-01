@@ -31,22 +31,38 @@ export default async function handler(req, res) {
       .single();
 
     if (visitorError || !visitor) {
-      return res.status(200).json({ visited: [], total: 16 });
+      return res.status(200).json({ visited: [], total: 16, knockoutCaptures: [] });
     }
 
-    // Get all check-ins for this visitor
+    // Get all check-ins for this visitor (including phase)
     const { data: checkins, error: checkinError } = await supabase
       .from('checkins')
-      .select('location_id')
+      .select('location_id, phase')
       .eq('visitor_id', visitor.id);
 
     if (checkinError) {
       return res.status(500).json({ error: 'Failed to fetch progress' });
     }
 
-    const visited = checkins.map(c => c.location_id);
+    // Split into base game (group_stage) and knockout captures
+    const baseVisited = [];
+    const knockoutCaptures = [];
 
-    return res.status(200).json({ visited, total: 16 });
+    for (const c of (checkins || [])) {
+      if (c.phase === 'group_stage') {
+        if (!baseVisited.includes(c.location_id)) {
+          baseVisited.push(c.location_id);
+        }
+      } else {
+        knockoutCaptures.push({ location_id: c.location_id, phase: c.phase });
+      }
+    }
+
+    return res.status(200).json({
+      visited: baseVisited,
+      total: 16,
+      knockoutCaptures,
+    });
   } catch {
     return res.status(500).json({ error: 'Internal server error' });
   }

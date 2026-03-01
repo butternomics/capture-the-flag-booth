@@ -71,6 +71,17 @@ const STRINGS = {
     // Language toggle
     submitForReview: 'Submit for Review',
 
+    // Knockout rounds
+    knockoutFlag: 'KNOCKOUT FLAG',
+    knockoutCaptured: 'Knockout Flag Captured!',
+    knockoutChampion: 'Knockout Champion',
+    knockoutRemaining: 'knockout flags remaining',
+    knockoutFlags: 'knockout flags',
+    phaseGroupStage: 'GROUP STAGE',
+    phaseR32: 'KNOCKOUT: ROUND OF 32',
+    phaseR16: 'KNOCKOUT: ROUND OF 16',
+    phaseSemifinal: 'KNOCKOUT: SEMIFINAL',
+
     switchLang: 'Espa\u00f1ol',
   },
 
@@ -131,6 +142,17 @@ const STRINGS = {
     showcaseAtlanta: 'Showcase Atlanta',
 
     submitForReview: 'Enviar para Revisi\u00f3n',
+
+    // Knockout rounds
+    knockoutFlag: 'BANDERA ELIMINATORIA',
+    knockoutCaptured: '\u00a1Bandera Eliminatoria Capturada!',
+    knockoutChampion: 'Campe\u00f3n Eliminatorio',
+    knockoutRemaining: 'banderas eliminatorias restantes',
+    knockoutFlags: 'banderas eliminatorias',
+    phaseGroupStage: 'FASE DE GRUPOS',
+    phaseR32: 'ELIMINATORIA: RONDA DE 32',
+    phaseR16: 'ELIMINATORIA: RONDA DE 16',
+    phaseSemifinal: 'ELIMINATORIA: SEMIFINAL',
 
     switchLang: 'English',
   },

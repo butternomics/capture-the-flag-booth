@@ -6,8 +6,8 @@
 
 import { initCanvas, renderFrame, exportImage, getWindow } from './canvas.js';
 import { initTouch, setMinScale, destroyTouch } from './touch.js';
-import { getLocation, getLocationFromURL, LOCATIONS, TOTAL_LOCATIONS } from './locations.js';
-import { checkin, getCachedVisitor, getCachedProgress, fetchProgress, fetchLeaderboard, uploadPhoto, submitForReview } from './api.js';
+import { getLocation, getLocationFromURL, getEffectiveLocation, isKnockoutLocation, LOCATIONS, TOTAL_LOCATIONS } from './locations.js';
+import { checkin, getCachedVisitor, getCachedProgress, getCachedKnockoutProgress, fetchProgress, fetchLeaderboard, fetchConfig, getCachedConfig, uploadPhoto, submitForReview } from './api.js';
 import { t, toggleLang, getLang } from './i18n.js';
 
 // ---- Format Definitions ----
@@ -28,6 +28,8 @@ const state = {
   photoX: 0,
   photoY: 0,
   photoScale: 1,
+  phase: 'group_stage',
+  overrides: [],
 };
 
 // ---- DOM Elements ----
@@ -91,6 +93,27 @@ function updateStrings() {
   });
 }
 
+// ---- Phase Banner ----
+const PHASE_LABELS = {
+  group_stage: 'phaseGroupStage',
+  knockout_r32: 'phaseR32',
+  knockout_r16: 'phaseR16',
+  semifinal: 'phaseSemifinal',
+};
+
+function updatePhaseBanner() {
+  const banner = document.getElementById('phase-banner');
+  const bannerText = document.getElementById('phase-banner-text');
+  if (!banner || !bannerText) return;
+
+  if (state.phase === 'group_stage') {
+    banner.style.display = 'none';
+  } else {
+    bannerText.textContent = t(PHASE_LABELS[state.phase] || 'phaseGroupStage');
+    banner.style.display = '';
+  }
+}
+
 // ---- Location Initialization ----
 function initLocation() {
   const slug = getLocationFromURL();
@@ -100,7 +123,7 @@ function initLocation() {
     return;
   }
 
-  const loc = getLocation(slug);
+  const loc = getEffectiveLocation(slug, state.overrides);
   if (!loc) {
     goToScreen('home');
     return;
@@ -114,6 +137,12 @@ function initLocation() {
   landingCountry.textContent = `${t('pairedWith')} ${loc.country}`;
   landingFlag.textContent = loc.flag;
   landingTagline.textContent = `"${loc.tagline}"`;
+
+  // Show/hide knockout badge on landing card
+  const knockoutBadge = document.getElementById('landing-knockout-badge');
+  if (knockoutBadge) {
+    knockoutBadge.style.display = loc._knockout ? '' : 'none';
+  }
 
   goToScreen('landing');
 }
@@ -142,11 +171,21 @@ function showLocationPicker() {
   }
 
   pickerGrid.innerHTML = '';
-  for (const [slug, loc] of Object.entries(LOCATIONS)) {
+  const koProgress = getCachedKnockoutProgress();
+  for (const [slug, baseLoc] of Object.entries(LOCATIONS)) {
+    const loc = getEffectiveLocation(slug, state.overrides);
     const isCaptured = visited.includes(slug);
+    const isKO = loc._knockout;
+    const isKOCaptured = koProgress.some(k => k.location_id === slug && k.phase === state.phase);
+
+    let classes = 'location-card';
+    if (isCaptured) classes += ' location-card-captured';
+    if (isKO) classes += ' location-card-knockout';
+
     const btn = document.createElement('button');
-    btn.className = 'location-card' + (isCaptured ? ' location-card-captured' : '');
+    btn.className = classes;
     btn.innerHTML = `
+      ${isKO ? '<span class="location-card-knockout-badge">KO</span>' : ''}
       <span class="location-card-flag">${loc.flag}</span>
       <span class="location-card-name">${loc.name}</span>
       <span class="location-card-country">${loc.country}</span>
@@ -164,6 +203,12 @@ function showLocationPicker() {
       landingCountry.textContent = `${t('pairedWith')} ${loc.country}`;
       landingFlag.textContent = loc.flag;
       landingTagline.textContent = `"${loc.tagline}"`;
+
+      // Show/hide knockout badge
+      const knockoutBadge = document.getElementById('landing-knockout-badge');
+      if (knockoutBadge) {
+        knockoutBadge.style.display = loc._knockout ? '' : 'none';
+      }
 
       goToScreen('landing');
     });
@@ -292,8 +337,8 @@ async function doDownloadAndCheckin(email, firstName) {
     // Download the image
     await exportImage(canvasEl, state.locationSlug, state.formatName);
 
-    // Register check-in (async, won't block)
-    checkin(email, firstName, state.locationSlug, state.formatName);
+    // Register check-in and get venue offer (pass phase for knockout)
+    const checkinResult = await checkin(email, firstName, state.locationSlug, state.formatName, state.phase);
 
     // Upload thumbnail for admin review (fire and forget)
     uploadPhoto(email, state.locationSlug, thumbnailData);
@@ -305,8 +350,38 @@ async function doDownloadAndCheckin(email, firstName) {
 
     const doneLocationEl = document.getElementById('done-location-name');
     const doneProgressEl = document.getElementById('done-progress');
+    const doneTitle = document.getElementById('done-title');
+    const doneKOBadge = document.getElementById('done-knockout-badge');
     if (doneLocationEl) doneLocationEl.textContent = state.location?.name || '';
     if (doneProgressEl) doneProgressEl.textContent = `${count} ${t('progressSoFar')}`;
+
+    // Show knockout badge + title on done screen if knockout capture
+    if (state.location?._knockout && doneKOBadge) {
+      doneKOBadge.style.display = '';
+      if (doneTitle) doneTitle.textContent = t('knockoutCaptured');
+    } else {
+      if (doneKOBadge) doneKOBadge.style.display = 'none';
+      if (doneTitle) doneTitle.textContent = t('flagCaptured');
+    }
+
+    // Show venue offer if present
+    const offerEl = document.getElementById('done-offer');
+    const offerTextEl = document.getElementById('done-offer-text');
+    const offerCodeEl = document.getElementById('done-offer-code');
+    if (offerEl) {
+      if (checkinResult.offer) {
+        offerTextEl.textContent = checkinResult.offer.offer_text;
+        if (checkinResult.offer.offer_code) {
+          offerCodeEl.textContent = checkinResult.offer.offer_code;
+          offerCodeEl.style.display = '';
+        } else {
+          offerCodeEl.style.display = 'none';
+        }
+        offerEl.style.display = '';
+      } else {
+        offerEl.style.display = 'none';
+      }
+    }
 
     // Check if all 16 captured → show completion screen
     if (count >= TOTAL_LOCATIONS) {
@@ -332,6 +407,10 @@ async function doDownload() {
     const doneProgressEl = document.getElementById('done-progress');
     if (doneLocationEl) doneLocationEl.textContent = state.location?.name || '';
     if (doneProgressEl) doneProgressEl.textContent = '';
+
+    // No check-in = no offer
+    const offerEl = document.getElementById('done-offer');
+    if (offerEl) offerEl.style.display = 'none';
 
     goToScreen('done');
   } catch {
@@ -371,9 +450,23 @@ async function showProgress() {
     if (btnSubmit) btnSubmit.classList.add('hidden');
   }
 
+  // Knockout progress section
+  const koSection = document.getElementById('knockout-progress');
+  const koCount = document.getElementById('knockout-count');
+  const koProgress = getCachedKnockoutProgress();
+  if (koSection && koCount) {
+    if (state.phase !== 'group_stage' && koProgress.length > 0) {
+      koCount.textContent = koProgress.length;
+      koSection.style.display = '';
+    } else {
+      koSection.style.display = 'none';
+    }
+  }
+
   // Location list
   progressList.innerHTML = '';
-  for (const [slug, loc] of Object.entries(LOCATIONS)) {
+  for (const [slug, baseLoc] of Object.entries(LOCATIONS)) {
+    const loc = getEffectiveLocation(slug, state.overrides);
     const li = document.createElement('li');
     li.className = 'progress-item' + (visited.includes(slug) ? ' captured' : '');
     li.innerHTML = `
@@ -587,5 +680,22 @@ document.addEventListener('dragover', (e) => e.preventDefault());
 document.addEventListener('drop', (e) => e.preventDefault());
 
 // ---- Init ----
-updateStrings();
-initLocation();
+async function init() {
+  updateStrings();
+
+  // Fetch game config (phase + overrides) — use cached as fallback
+  try {
+    const config = await fetchConfig();
+    state.phase = config.phase || 'group_stage';
+    state.overrides = config.overrides || [];
+  } catch {
+    const cached = getCachedConfig();
+    state.phase = cached.phase || 'group_stage';
+    state.overrides = cached.overrides || [];
+  }
+
+  updatePhaseBanner();
+  initLocation();
+}
+
+init();
